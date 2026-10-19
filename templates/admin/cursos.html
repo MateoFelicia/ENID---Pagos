@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar cursos | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+            <h1 class="display-6 fw-bold mb-2">Cursos</h1>
+            <p class="text-secondary mb-0">Creá, editá o desactivá la oferta de cursos.</p>
+        </div>
+        <a href="{{ url_for('nuevo_curso') }}" class="btn btn-danger">
+            Agregar curso
+        </a>
+    </div>
+
+    <div class="table-responsive bg-white rounded-4 shadow-sm p-3">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Curso</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curso in cursos %}
+                <tr>
+                    <td>
+                        <strong>{{ curso.nombre }}</strong>
+                        {% if curso.descripcion %}
+                        <div class="small text-secondary">{{ curso.descripcion }}</div>
+                        {% endif %}
+                    </td>
+                    <td>${{ "%.2f"|format(curso.precio) }} ARS</td>
+                    <td>
+                        {% if curso.activo %}
+                        <span class="badge text-bg-success">Activo</span>
+                        {% else %}
+                        <span class="badge text-bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2">
+                            <a href="{{ url_for('editar_curso', curso_id=curso.id) }}"
+                                class="btn btn-sm btn-outline-dark">
+                                Editar
+                            </a>
+
+                            {% if curso.activo %}
+                            <form method="POST" action="{{ url_for('desactivar_curso', curso_id=curso.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Desactivar
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-secondary py-4">
+                        Todavía no hay cursos cargados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

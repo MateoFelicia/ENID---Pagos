@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Cursos de fútbol | Escuela de fútbol{% endblock %}
+
+{% block content %}
+<main>
+    <section class="portada">
+        <div class="container portada-contenido">
+            <p class="portada-etiqueta">FORMACIÓN FUTBOLÍSTICA</p>
+
+            <h1>
+                CRECÉ EN EL JUEGO.<br>
+                <span>DISFRUTÁ CADA PARTIDO.</span>
+            </h1>
+
+            <p class="portada-descripcion">
+                Un espacio para aprender, entrenar y compartir la pasión por el fútbol.
+            </p>
+
+            <div class="d-flex flex-column flex-sm-row gap-3">
+                <a class="btn btn-danger btn-lg btn-inscripcion" href="#inscripcion">
+                    QUIERO INSCRIBIRME
+                </a>
+                <a class="btn btn-outline-light btn-lg" href="#propuesta">
+                    CONOCER LA PROPUESTA
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="corte corte-oscuro-claro" aria-hidden="true">
+        <svg viewBox="0 0 1440 84" preserveAspectRatio="none">
+            <polygon points="0,84 1440,0 1440,84"></polygon>
+        </svg>
+    </div>
+
+    <section class="seccion-propuesta py-5" id="propuesta">
+        <div class="container py-lg-5">
+            <p class="seccion-etiqueta">APRENDER · ENTRENAR · COMPARTIR</p>
+            <h2 class="titulo-seccion">EL FÚTBOL SE CONSTRUYE EN EQUIPO.</h2>
+
+            <div class="row g-4 mt-3">
+                <div class="col-md-4">
+                    <article class="tarjeta-propuesta">
+                        <span class="numero-tarjeta">01</span>
+                        <h3>TÉCNICA</h3>
+                        <p>Práctica y fundamentos para seguir creciendo con la pelota.</p>
+                    </article>
+                </div>
+
+                <div class="col-md-4">
+                    <article class="tarjeta-propuesta">
+                        <span class="numero-tarjeta">02</span>
+                        <h3>JUEGO</h3>
+                        <p>Aprendizaje del juego y sus decisiones dentro de la cancha.</p>
+                    </article>
+                </div>
+
+                <div class="col-md-4">
+                    <article class="tarjeta-propuesta">
+                        <span class="numero-tarjeta">03</span>
+                        <h3>EQUIPO</h3>
+                        <p>Un espacio para compartir, entrenar y disfrutar del fútbol.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="corte corte-claro-oscuro" aria-hidden="true">
+        <svg viewBox="0 0 1440 84" preserveAspectRatio="none">
+            <polygon points="0,0 1440,84 0,84"></polygon>
+        </svg>
+    </div>
+
+
+    <section class="seccion-pago py-5" id="precio">
+        <div class="container py-lg-5">
+            <p class="seccion-etiqueta">TU PRÓXIMO PASO</p>
+            <h2 class="titulo-seccion text-white">ELEGÍ TU CURSO ENID.</h2>
+
+            <div class="row g-4 mt-3">
+                {% for curso in cursos %}
+                <div class="col-md-6 col-lg-4">
+                    <article class="tarjeta-pago">
+                        <p class="seccion-etiqueta">INSCRIPCIÓN ENID</p>
+                        <h3>{{ curso.nombre }}</h3>
+                        <p>{{ curso.descripcion or "Formación futbolística ENID." }}</p>
+
+                        <hr>
+
+                        <p class="etiqueta-prueba">IMPORTE DE PRUEBA</p>
+                        <p class="precio-curso">ARS {{ curso.precio }}</p>
+
+                        <a class="btn btn-danger btn-lg w-100 btn-inscripcion" href="#inscripcion">
+                            CONTINUAR
+                        </a>
+
+                        <p class="nota-pago">
+                            El pago se completará en Mercado Pago cuando conectemos el checkout.
+                        </p>
+                    </article>
+                </div>
+                {% else %}
+                <p class="text-white-50">Todavía no hay cursos activos publicados.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+
+    <div class="corte corte-oscuro-claro" aria-hidden="true">
+        <svg viewBox="0 0 1440 84" preserveAspectRatio="none">
+            <polygon points="0,84 1440,0 1440,84"></polygon>
+        </svg>
+    </div>
+
+
+    <section class="seccion-inscripcion py-5" id="inscripcion">
+        <div class="container py-lg-4">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-5">
+                    <p class="seccion-etiqueta">TU PRÓXIMO PASO</p>
+                    <h2 class="titulo-seccion">EMPEZÁ TU INSCRIPCIÓN.</h2>
+                    <p class="texto-secundario">
+                        Este formulario sigue siendo una práctica: por ahora recibe tu nombre,
+                        pero todavía no guarda una inscripción ni inicia un pago.
+                    </p>
+                </div>
+
+<div class="col-lg-7">
+                        <div class="formulario-tarjeta">
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+
+                                {{ form.curso_id.label(class="form-label") }}
+                                {{ form.curso_id(class="form-select form-select-lg") }}
+
+                                {% for error in form.curso_id.errors %}
+                                <p class="text-danger small mt-2">{{ error }}</p>
+                                {% endfor %}
+
+                                {{ form.nombre.label(class="form-label mt-3") }}
+                                {{ form.nombre(class="form-control form-control-lg", placeholder="Tu nombre") }}
+
+                                {% for error in form.nombre.errors %}
+                                <p class="text-danger small mt-2">{{ error }}</p>
+                                {% endfor %}
+
+                                <div class="mt-4">
+                                    {{ form.enviar(class="btn btn-danger btn-lg w-100") }}
+                                </div>
+                            </form>
+
+                            {% if mensaje %}
+                            <div class="alert alert-success mt-4 mb-0" role="alert">
+                                {{ mensaje }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

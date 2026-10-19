@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Administrar inscripciones | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-2">Inscripciones</h1>
+    <p class="text-secondary mb-4">
+        Consultá los pedidos y el estado de sus pagos.
+    </p>
+
+    <div class="table-responsive bg-white rounded-4 shadow-sm p-3">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>N.º</th>
+                    <th>Alumno</th>
+                    <th>Curso</th>
+                    <th>Importe</th>
+                    <th>Inscripción</th>
+                    <th>Pago</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscripcion in inscripciones %}
+                <tr>
+                    <td>#{{ inscripcion.id }}</td>
+                    <td>
+                        {% if inscripcion.usuario %}
+                        {{ inscripcion.usuario.nombre }}
+                        {% else %}
+                        {{ inscripcion.alumno_nombre }}
+                        <div class="small text-secondary">Sin cuenta asociada</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ inscripcion.curso.nombre }}</td>
+                    <td>${{ "%.2f"|format(inscripcion.monto) }} ARS</td>
+                    <td>
+                        <span class="badge
+                {% if inscripcion.estado == 'pagada' %}
+                  text-bg-success
+                {% elif inscripcion.estado == 'pendiente' %}
+                  text-bg-warning
+                {% else %}
+                  text-bg-secondary
+                {% endif %}">
+                            {{ inscripcion.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        {% for pago in inscripcion.pagos %}
+                        <span class="badge text-bg-light border text-dark">
+                            {{ pago.estado }}
+                        </span>
+                        {% else %}
+                        <span class="text-secondary">Sin pago</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-secondary py-4">
+                        Todavía no hay inscripciones.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Mis inscripciones | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Mi cuenta</p>
+            <h1 class="display-6 fw-bold mb-2">Mis inscripciones</h1>
+            <p class="text-secondary mb-0">
+                Acá podés consultar tus cursos y el estado de cada inscripción.
+            </p>
+        </div>
+        <a href="{{ url_for('inicio') }}#inscripcion" class="btn btn-danger">
+            Ver cursos
+        </a>
+    </div>
+
+    {% if inscripciones %}
+    <div class="row g-3">
+        {% for inscripcion in inscripciones %}
+        <div class="col-12 col-lg-6">
+            <article class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <p class="text-secondary small mb-1">
+                                Inscripción #{{ inscripcion.id }}
+                            </p>
+                            <h2 class="h4 fw-bold mb-3">
+                                {{ inscripcion.curso.nombre }}
+                            </h2>
+                        </div>
+
+                        {% if inscripcion.estado == "pagada" %}
+                        <span class="badge text-bg-success">Pagada</span>
+                        {% elif inscripcion.estado == "pendiente" %}
+                        <span class="badge text-bg-warning">Pendiente</span>
+                        {% else %}
+                        <span class="badge text-bg-secondary">
+                            {{ inscripcion.estado }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <p class="mb-0">
+                        <span class="text-secondary">Importe:</span>
+                        <strong>${{ inscripcion.monto }} ARS</strong>
+                    </p>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-light rounded-4 p-4 p-md-5 text-center">
+        <h2 class="h4 fw-bold">Todavía no tenés inscripciones</h2>
+        <p class="text-secondary">
+            Cuando te inscribas a un curso, va a aparecer acá.
+        </p>
+        <a href="{{ url_for('inicio') }}#inscripcion" class="btn btn-danger">
+            Explorar cursos
+        </a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

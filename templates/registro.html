@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Crear cuenta | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">ENID</p>
+                <h1 class="h2 fw-bold mb-2">Creá tu cuenta</h1>
+                <p class="text-secondary mb-4">
+                    Registrate para continuar con tu inscripción.
+                </p>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.nombre.label(class="form-label") }}
+                        {{ form.nombre(class="form-control", placeholder="Tu nombre") }}
+                        {% for error in form.nombre.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="nombre@correo.com") }}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", placeholder="Al menos 8 caracteres") }}
+                        {% for error in form.password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.confirmar_password.label(class="form-label") }}
+                        {{ form.confirmar_password(class="form-control", placeholder="Repetí la contraseña") }}
+                        {% for error in form.confirmar_password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {{ form.enviar(class="btn btn-danger w-100 py-2 fw-bold") }}
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

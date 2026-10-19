@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">ENID</p>
+                <h1 class="h2 fw-bold mb-2">Iniciá sesión</h1>
+                <p class="text-secondary mb-4">
+                    Ingresá con el correo y la contraseña de tu cuenta.
+                </p>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", placeholder="nombre@correo.com") }}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", placeholder="Tu contraseña") }}
+                        {% for error in form.password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {{ form.enviar(class="btn btn-danger w-100 py-2 fw-bold") }}
+                </form>
+
+                <p class="text-center mt-4 mb-0">
+                    ¿Todavía no tenés cuenta?
+                    <a href="{{ url_for('registro') }}" class="text-danger fw-semibold">
+                        Registrate
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
