@@ -36,6 +36,9 @@ class Curso(db.Model):
     descripcion = db.Column(db.String(300))
     precio = db.Column(db.Numeric(10, 2), nullable=False)
     activo = db.Column(db.Boolean, default=True, nullable=False)
+    meet_link = db.Column(db.String(300))
+    fecha = db.Column(db.DateTime)
+    grabacion = db.Column(db.String(300))
 
     inscripciones = db.relationship("Inscripcion", back_populates="curso")
 
@@ -48,6 +51,7 @@ class Inscripcion(db.Model):
     alumno_nombre = db.Column(db.String(120), nullable=False)
     monto = db.Column(db.Numeric(10, 2), nullable=False)
     estado = db.Column(db.String(20), default="pendiente", nullable=False)
+    origen = db.Column(db.String(20), default="web", nullable=False)
 
     curso = db.relationship("Curso", back_populates="inscripciones")
     usuario = db.relationship("Usuario", back_populates="inscripciones")
@@ -59,6 +63,13 @@ class Inscripcion(db.Model):
     db.ForeignKey("usuarios.id"),
     nullable=True
     )
+
+    def tiene_acceso(self):
+        if self.estado == "pagada":
+            return True
+        if self.origen == "manual":
+            return True
+        return False
     
 class Pago(db.Model):
     __tablename__ = "pagos"

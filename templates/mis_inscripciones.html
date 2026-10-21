@@ -50,6 +50,14 @@
                         <span class="text-secondary">Importe:</span>
                         <strong>${{ inscripcion.monto }} ARS</strong>
                     </p>
+
+                    {% if inscripcion.tiene_acceso() %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('ver_curso', curso_id=inscripcion.curso.id) }}" class="btn btn-danger w-100">
+                            Entrar al curso
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </article>
         </div>

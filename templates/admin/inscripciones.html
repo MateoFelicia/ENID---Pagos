@@ -4,11 +4,16 @@
 
 {% block content %}
 <section class="container py-5">
-    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
-    <h1 class="display-6 fw-bold mb-2">Inscripciones</h1>
-    <p class="text-secondary mb-4">
-        Consultá los pedidos y el estado de sus pagos.
-    </p>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+            <h1 class="display-6 fw-bold mb-2">Inscripciones</h1>
+            <p class="text-secondary mb-0">Consultá los pedidos y el estado de sus pagos.</p>
+        </div>
+        <a href="{{ url_for('nueva_inscripcion_manual') }}" class="btn btn-danger">
+            Nueva inscripción manual
+        </a>
+    </div>
 
     <div class="table-responsive bg-white rounded-4 shadow-sm p-3">
         <table class="table align-middle mb-0">

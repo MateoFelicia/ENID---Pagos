@@ -35,6 +35,12 @@
                     {{ form.enviar(class="btn btn-danger w-100 py-2 fw-bold") }}
                 </form>
 
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('recuperar_password') }}" class="text-decoration-none small">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
                 <p class="text-center mt-4 mb-0">
                     ¿Todavía no tenés cuenta?
                     <a href="{{ url_for('registro') }}" class="text-danger fw-semibold">

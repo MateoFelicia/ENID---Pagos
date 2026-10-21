@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ curso.nombre }} | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row">
+        <div class="col-12 col-lg-8 mx-auto">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <h1 class="h2 fw-bold mb-3">{{ curso.nombre }}</h1>
+                
+                {% if curso.descripcion %}
+                <p class="text-secondary mb-4">{{ curso.descripcion }}</p>
+                {% endif %}
+
+                <div class="mb-4 p-3 bg-light rounded-3">
+                    <h5 class="fw-bold mb-3">Contenido del curso</h5>
+                    
+                    {% if curso.fecha %}
+                    <div class="mb-3">
+                        <strong>Fecha y hora:</strong>
+                        <div>{{ curso.fecha.strftime('%d/%m/%Y %H:%M') }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if curso.meet_link %}
+                    <div class="mb-3">
+                        <strong>Enlace a la clase en vivo:</strong>
+                        <div>
+                            <a href="{{ curso.meet_link }}" target="_blank" class="btn btn-danger btn-sm">
+                                Entrar a la clase
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if curso.grabacion %}
+                    <div class="mb-3">
+                        <strong>Grabación:</strong>
+                        <div>
+                            <a href="{{ curso.grabacion }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                                Ver grabación
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if not curso.fecha and not curso.meet_link and not curso.grabacion %}
+                    <p class="text-secondary mb-0">El contenido se habilitará próximamente.</p>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('mis_inscripciones') }}" class="btn btn-outline-secondary">
+                    Volver a mis inscripciones
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

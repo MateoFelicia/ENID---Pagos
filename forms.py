@@ -66,4 +66,16 @@ class CursoForm(FlaskForm):
         validators=[DataRequired(), NumberRange(min=0.01)]
     )
     activo = BooleanField("Curso disponible", default=True)
+    meet_link = StringField(
+        "Link de Meet/Zoom",
+        validators=[Optional(), Length(max=300)]
+    )
+    fecha = StringField(
+        "Fecha y hora (YYYY-MM-DD HH:MM)",
+        validators=[Optional(), Length(max=16)]
+    )
+    grabacion = StringField(
+        "Link de grabación",
+        validators=[Optional(), Length(max=300)]
+    )
     enviar = SubmitField("Guardar curso")

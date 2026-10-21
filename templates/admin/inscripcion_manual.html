@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Inscripción manual | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+                <h1 class="h2 fw-bold mb-4">Alta manual de alumno</h1>
+                <p class="text-secondary mb-4">
+                    Inscribí a un alumno directamente sin pasar por el checkout. 
+                    El acceso se concede automáticamente (origen: manual).
+                </p>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() if form else '' }}
+
+                    <div class="mb-3">
+                        <label class="form-label">Curso *</label>
+                        <select name="curso_id" class="form-select" required>
+                            <option value="">Seleccioná un curso</option>
+                            {% for curso in cursos %}
+                            <option value="{{ curso.id }}">{{ curso.nombre }} - ${{ "%.2f"|format(curso.precio) }} ARS</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del alumno *</label>
+                        <input type="text" name="alumno_nombre" class="form-control" required maxlength="120">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email (opcional)</label>
+                        <input type="email" name="email" class="form-control" maxlength="120" placeholder="Si existe, se asocia a la cuenta; si no, se crea una">
+                        <div class="form-text">
+                            Si el email no existe, se crea un usuario con contraseña temporal "changeme123".
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Crear inscripción</button>
+                        <a href="{{ url_for('administrar_inscripciones') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
