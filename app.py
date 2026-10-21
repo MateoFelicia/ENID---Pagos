@@ -433,11 +433,14 @@ def inicio():
 @app.route("/webhooks/mercadopago", methods=["POST"])
 @csrf.exempt
 def webhook_mercado_pago():
-    print("\n[WEBHOOK] POST recibido")
-    print(f"  ALL Headers: {dict(request.headers)}")
-    print(f"  x-signature: {request.headers.get('x-signature')}")
-    print(f"  x-request-id: {request.headers.get('x-request-id')}")
-    print(f"  Content-Type: {request.headers.get('Content-Type')}")
+    import sys
+    log = lambda msg: print(msg, flush=True, file=sys.stderr)
+    
+    log("\n[WEBHOOK] POST recibido")
+    log(f"  ALL Headers: {dict(request.headers)}")
+    log(f"  x-signature: {request.headers.get('x-signature')}")
+    log(f"  x-request-id: {request.headers.get('x-request-id')}")
+    log(f"  Content-Type: {request.headers.get('Content-Type')}")
     
     firma = request.headers.get("x-signature")
     request_id = request.headers.get("x-request-id")
@@ -445,11 +448,11 @@ def webhook_mercado_pago():
     data_id = evento.get("data", {}).get("id")
     secreto = os.getenv("MP_WEBHOOK_SECRET")
 
-    print(f"  Evento: {evento.get('type')}, data_id: {data_id}")
-    print(f"  Secreto configurado: {'SI' if secreto else 'NO'}")
-    print(f"  Firma recibida: {firma}")
-    print(f"  Request ID: {request_id}")
-    print(f"  Data ID: {data_id}")
+    log(f"  Evento: {evento.get('type')}, data_id: {data_id}")
+    log(f"  Secreto configurado: {'SI' if secreto else 'NO'}")
+    log(f"  Firma recibida: {firma}")
+    log(f"  Request ID: {request_id}")
+    log(f"  Data ID: {data_id}")
 
     if not secreto:
         print("  ERROR: MP_WEBHOOK_SECRET no configurado")

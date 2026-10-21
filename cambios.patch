@@ -1,0 +1,399 @@
+diff --git a/README.md b/README.md
+index 6adfd3a..feb0916 100644
+--- a/README.md
++++ b/README.md
+@@ -11,7 +11,7 @@ Aplicación web para la gestión de cursos, inscripciones y pagos de la Escuela
+ - **Sistema de usuarios**: registro, inicio/cierre de sesión, contraseñas hasheadas (bcrypt)
+ - **Panel de administración** (solo admins):
+   - Gestión de cursos (crear, editar, desactivar)
+-  - Listado de inscripciones con estado de pago
++  - Listado de inscripciones con estado de pago, alta manual y eliminación de inscripciones
+ - **Base de datos** SQLite con migraciones (Alembic/Flask-Migrate)
+ 
+ ## Tecnologías
+@@ -82,6 +82,11 @@ MP_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxx
+ - `SECRET_KEY`: cualquier string largo y aleatorio (usar `python -c "import secrets; print(secrets.token_hex(32))"`)
+ - `MP_ACCESS_TOKEN`: Access Token de tu aplicación de Mercado Pago (producción o test)
+ - `MP_WEBHOOK_SECRET`: Clave secreta del webhook (se obtiene al configurar el webhook en el panel de Mercado Pago)
++- `NGROK_URL` (solo desarrollo): URL https de ngrok, usada para las `back_urls` de Mercado Pago
++- `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SERVER`, `MAIL_PORT` (opcionales). Si `MAIL_USERNAME` está definido, los mails se envían de verdad; si no, se imprimen en consola. Con Gmail, `MAIL_PASSWORD` debe ser una *contraseña de aplicación* (requiere verificación en 2 pasos), no la contraseña normal. Opcional: `MAIL_DEFAULT_SENDER`
++- `FLASK_DEBUG=1` (opcional): activa el modo debug al correr `python app.py`. No usar en producción.
++
++`SECRET_KEY` es obligatoria: la app no arranca sin ella.
+ 
+ ### 4. Inicializar base de datos
+ 
+diff --git a/app.py b/app.py
+index c1c26d6..4d54574 100644
+--- a/app.py
++++ b/app.py
+@@ -1,4 +1,6 @@
+ import os
++import secrets
++from datetime import datetime
+ 
+ from dotenv import load_dotenv
+ from flask import Flask, redirect, render_template, request, flash, url_for, abort
+@@ -31,6 +33,8 @@ load_dotenv()
+ 
+ app = Flask(__name__)
+ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
++if not app.config["SECRET_KEY"]:
++    raise RuntimeError("Falta SECRET_KEY en el archivo .env")
+ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///pagos.db"
+ app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+ app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
+@@ -68,15 +72,13 @@ def admin_required(view):
+ def tiene_acceso_curso(usuario, curso):
+     if usuario.es_admin:
+         return True
+-    inscripcion = db.session.execute(
++    inscripciones = db.session.execute(
+         db.select(Inscripcion).where(
+             Inscripcion.usuario_id == usuario.id,
+             Inscripcion.curso_id == curso.id
+         )
+-    ).scalar_one_or_none()
+-    if inscripcion and inscripcion.tiene_acceso():
+-        return True
+-    return False
++    ).scalars().all()
++    return any(i.tiene_acceso() for i in inscripciones)
+ 
+ 
+ @app.route("/admin/cursos")
+@@ -101,6 +103,20 @@ def administrar_inscripciones():
+     )
+ 
+ 
++@app.route("/admin/inscripciones/<int:inscripcion_id>/eliminar", methods=["POST"])
++@admin_required
++def eliminar_inscripcion(inscripcion_id):
++    inscripcion = db.session.get(Inscripcion, inscripcion_id)
++    if inscripcion is None:
++        abort(404)
++
++    # Los pagos asociados se borran en cascada (ver models.py)
++    db.session.delete(inscripcion)
++    db.session.commit()
++    flash(f"Inscripción #{inscripcion_id} eliminada.", "success")
++    return redirect(url_for("administrar_inscripciones"))
++
++
+ @app.route("/admin/inscripciones/nueva", methods=["GET", "POST"])
+ @admin_required
+ def nueva_inscripcion_manual():
+@@ -123,15 +139,17 @@ def nueva_inscripcion_manual():
+             return redirect(url_for("nueva_inscripcion_manual"))
+ 
+         usuario = None
++        usuario_nuevo = False
+         if email:
+             usuario = db.session.execute(
+                 db.select(Usuario).where(db.func.lower(Usuario.email) == email)
+             ).scalar_one_or_none()
+             if not usuario:
+                 usuario = Usuario(nombre=alumno_nombre, email=email)
+-                usuario.establecer_password("changeme123")
++                usuario.establecer_password(secrets.token_urlsafe(32))
+                 db.session.add(usuario)
+                 db.session.flush()
++                usuario_nuevo = True
+ 
+         inscripcion = Inscripcion(
+             curso_id=curso.id,
+@@ -143,6 +161,18 @@ def nueva_inscripcion_manual():
+         )
+         db.session.add(inscripcion)
+         db.session.commit()
++
++        if usuario_nuevo:
++            token = generar_token_reset(email)
++            reset_url = url_for("resetear_password", token=token, _external=True)
++            enviar_email(
++                email,
++                "Tu acceso a ENID",
++                f"<p>Hola {usuario.nombre},</p>"
++                f"<p>Te inscribimos en <strong>{curso.nombre}</strong>. "
++                f"Creá tu contraseña desde este enlace (vence en 1 hora):</p>"
++                f'<p><a href="{reset_url}">{reset_url}</a></p>'
++            )
+         flash("Inscripción manual creada con acceso concedido.", "success")
+         return redirect(url_for("administrar_inscripciones"))
+ 
+@@ -161,7 +191,6 @@ def nuevo_curso():
+         fecha = None
+         if form.fecha.data:
+             try:
+-                from datetime import datetime
+                 fecha = datetime.strptime(form.fecha.data, "%Y-%m-%dT%H:%M")
+             except ValueError:
+                 pass
+@@ -194,12 +223,13 @@ def editar_curso(curso_id):
+         abort(404)
+ 
+     form = CursoForm(obj=curso)
++    if request.method == "GET" and curso.fecha:
++        form.fecha.data = curso.fecha.strftime("%Y-%m-%dT%H:%M")
+ 
+     if form.validate_on_submit():
+         fecha = None
+         if form.fecha.data:
+             try:
+-                from datetime import datetime
+                 fecha = datetime.strptime(form.fecha.data, "%Y-%m-%dT%H:%M")
+             except ValueError:
+                 pass
+@@ -405,8 +435,6 @@ def inicio():
+             }
+ 
+             resultado = sdk.preference().create(preference_data)
+-            print("MP Preference response:", resultado)
+-            
+             if resultado.get("status") != 201:
+                 flash("Error al crear la preferencia de pago. Intente nuevamente.", "danger")
+                 return redirect(url_for("inicio"))
+@@ -434,8 +462,6 @@ def inicio():
+ @csrf.exempt
+ def webhook_mercado_pago():
+     print("\n[WEBHOOK] POST recibido")
+-    print(f"  ALL Headers: {dict(request.headers)}")
+-    print(f"  x-signature: {request.headers.get('x-signature')}")
+     print(f"  x-request-id: {request.headers.get('x-request-id')}")
+     print(f"  Content-Type: {request.headers.get('Content-Type')}")
+     
+@@ -447,7 +473,6 @@ def webhook_mercado_pago():
+ 
+     print(f"  Evento: {evento.get('type')}, data_id: {data_id}")
+     print(f"  Secreto configurado: {'SI' if secreto else 'NO'}")
+-    print(f"  Firma recibida: {firma}")
+     print(f"  Request ID: {request_id}")
+     print(f"  Data ID: {data_id}")
+ 
+@@ -571,27 +596,23 @@ def verificar_token_reset(token, max_age=3600):
+ 
+ 
+ def enviar_email(destinatario, asunto, cuerpo_html):
+-    # Modo local: siempre simula e imprime en consola
+-    print(f"\n{'='*60}")
+-    print(f"[EMAIL LOCAL] Para: {destinatario}")
+-    print(f"Asunto: {asunto}")
+-    print(f"{'='*60}")
+-    print(cuerpo_html)
+-    print(f"{'='*60}\n")
+-    return True
+-    
+-    # Para producción, descomentá lo de abajo y borrá lo de arriba:
+-    # if not app.config.get("MAIL_USERNAME"):
+-    #     print(f"[EMAIL SIMULADO] Para: {destinatario} | Asunto: {asunto}")
+-    #     print(cuerpo_html)
+-    #     return True
+-    # try:
+-    #     msg = Message(asunto, recipients=[destinatario], html=cuerpo_html)
+-    #     mail.send(msg)
+-    #     return True
+-    # except Exception as e:
+-    #     print(f"Error enviando email: {e}")
+-    #     return False
++    # Sin MAIL_USERNAME configurado: modo local, imprime el mail en consola
++    if not app.config.get("MAIL_USERNAME"):
++        print(f"\n{'='*60}")
++        print(f"[EMAIL SIMULADO] Para: {destinatario}")
++        print(f"Asunto: {asunto}")
++        print(f"{'='*60}")
++        print(cuerpo_html)
++        print(f"{'='*60}\n")
++        return True
++
++    try:
++        msg = Message(asunto, recipients=[destinatario], html=cuerpo_html)
++        mail.send(msg)
++        return True
++    except Exception as e:
++        print(f"Error enviando email a {destinatario}: {e}")
++        return False
+ 
+ 
+ @app.route("/recuperar-password", methods=["GET", "POST"])
+@@ -672,4 +693,4 @@ def confirmar_email(token):
+ 
+ 
+ if __name__ == "__main__":
+-    app.run(debug=True)
+\ No newline at end of file
++    app.run(debug=os.getenv("FLASK_DEBUG") == "1")
+\ No newline at end of file
+diff --git a/migrations/versions/73eec2f98813_agregar_rol_administrador.py b/migrations/versions/73eec2f98813_agregar_rol_administrador.py
+index 07df2c7..86dded6 100644
+--- a/migrations/versions/73eec2f98813_agregar_rol_administrador.py
++++ b/migrations/versions/73eec2f98813_agregar_rol_administrador.py
+@@ -32,17 +32,6 @@ def upgrade():
+     # ### end Alembic commands ###
+ 
+ 
+-# def downgrade():
+-#     # ### commands auto generated by Alembic - please adjust! ###
+-#     with op.batch_alter_table('usuarios', schema=None) as batch_op:
+-#         batch_op.drop_column('es_admin')
+-
+-#     op.create_table('productos',
+-#     sa.Column('id', sa.INTEGER(), nullable=False),
+-#     sa.Column('nombre', sa.VARCHAR(length=120), nullable=False),
+-#     sa.Column('descripcion', sa.VARCHAR(length=300), nullable=True),
+-#     sa.Column('precio', sa.NUMERIC(precision=10, scale=2), nullable=False),
+-#     sa.Column('activo', sa.BOOLEAN(), nullable=False),
+-#     sa.PrimaryKeyConstraint('id')
+-#     )
+-#     # ### end Alembic commands ###
++def downgrade():
++    with op.batch_alter_table('usuarios', schema=None) as batch_op:
++        batch_op.drop_column('es_admin')
+diff --git a/migrations/versions/961fbd7fbad0_add_origen_to_inscripcion.py b/migrations/versions/961fbd7fbad0_add_origen_to_inscripcion.py
+index bc8244b..5e899bd 100644
+--- a/migrations/versions/961fbd7fbad0_add_origen_to_inscripcion.py
++++ b/migrations/versions/961fbd7fbad0_add_origen_to_inscripcion.py
+@@ -19,7 +19,7 @@ depends_on = None
+ def upgrade():
+     # ### commands auto generated by Alembic - please adjust! ###
+     with op.batch_alter_table('inscripciones', schema=None) as batch_op:
+-        batch_op.add_column(sa.Column('origen', sa.String(length=20), nullable=False))
++        batch_op.add_column(sa.Column('origen', sa.String(length=20), nullable=False, server_default='web'))
+ 
+     # ### end Alembic commands ###
+ 
+diff --git a/models.py b/models.py
+index 57e8122..ed59952 100644
+--- a/models.py
++++ b/models.py
+@@ -51,12 +51,21 @@ class Inscripcion(db.Model):
+     alumno_nombre = db.Column(db.String(120), nullable=False)
+     monto = db.Column(db.Numeric(10, 2), nullable=False)
+     estado = db.Column(db.String(20), default="pendiente", nullable=False)
+-    origen = db.Column(db.String(20), default="web", nullable=False)
++    origen = db.Column(
++        db.String(20),
++        default="web",
++        server_default="web",
++        nullable=False
++    )
+ 
+     curso = db.relationship("Curso", back_populates="inscripciones")
+     usuario = db.relationship("Usuario", back_populates="inscripciones")
+     
+-    pagos = db.relationship("Pago", back_populates="inscripcion")
++    pagos = db.relationship(
++        "Pago",
++        back_populates="inscripcion",
++        cascade="all, delete-orphan"
++    )
+     
+     usuario_id = db.Column(
+     db.Integer,
+diff --git a/templates/admin/inscripcion_manual.html b/templates/admin/inscripcion_manual.html
+index 7641a2e..46183eb 100644
+--- a/templates/admin/inscripcion_manual.html
++++ b/templates/admin/inscripcion_manual.html
+@@ -15,7 +15,7 @@
+                 </p>
+ 
+                 <form method="POST" novalidate>
+-                    {{ form.hidden_tag() if form else '' }}
++                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+ 
+                     <div class="mb-3">
+                         <label class="form-label">Curso *</label>
+@@ -36,7 +36,7 @@
+                         <label class="form-label">Email (opcional)</label>
+                         <input type="email" name="email" class="form-control" maxlength="120" placeholder="Si existe, se asocia a la cuenta; si no, se crea una">
+                         <div class="form-text">
+-                            Si el email no existe, se crea un usuario con contraseña temporal "changeme123".
++                            Si el email no existe, se crea la cuenta y se le envía un enlace para que elija su contraseña.
+                         </div>
+                     </div>
+ 
+diff --git a/templates/admin/inscripciones.html b/templates/admin/inscripciones.html
+index 6dd6a5f..7330b2d 100644
+--- a/templates/admin/inscripciones.html
++++ b/templates/admin/inscripciones.html
+@@ -25,6 +25,7 @@
+                     <th>Importe</th>
+                     <th>Inscripción</th>
+                     <th>Pago</th>
++                    <th class="text-end">Acciones</th>
+                 </tr>
+             </thead>
+             <tbody>
+@@ -62,10 +63,18 @@
+                         <span class="text-secondary">Sin pago</span>
+                         {% endfor %}
+                     </td>
++                    <td class="text-end">
++                        <form method="POST"
++                            action="{{ url_for('eliminar_inscripcion', inscripcion_id=inscripcion.id) }}"
++                            onsubmit="return confirm('¿Eliminar la inscripción #{{ inscripcion.id }} y sus pagos? No se puede deshacer.');">
++                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
++                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
++                        </form>
++                    </td>
+                 </tr>
+                 {% else %}
+                 <tr>
+-                    <td colspan="6" class="text-center text-secondary py-4">
++                    <td colspan="7" class="text-center text-secondary py-4">
+                         Todavía no hay inscripciones.
+                     </td>
+                 </tr>
+diff --git a/templates/base.html b/templates/base.html
+index a8a3f38..7cbc829 100644
+--- a/templates/base.html
++++ b/templates/base.html
+@@ -53,11 +53,11 @@
+                         <a class="nav-link" href="{{ url_for('administrar_cursos') }}">
+                             Administrar cursos
+                         </a>
+-                        <li class="nav-item">
+-                            <a class="nav-link" href="{{ url_for('administrar_inscripciones') }}">
+-                                Inscripciones
+-                            </a>
+-                        </li>
++                    </li>
++                    <li class="nav-item">
++                        <a class="nav-link" href="{{ url_for('administrar_inscripciones') }}">
++                            Inscripciones
++                        </a>
+                     </li>
+                     {% endif %}
+ 
+diff --git a/templates/index.html b/templates/index.html
+index 42a2793..83a649f 100644
+--- a/templates/index.html
++++ b/templates/index.html
+@@ -89,7 +89,7 @@
+ 
+                         <hr>
+ 
+-                        <p class="etiqueta-prueba">IMPORTE DE PRUEBA</p>
++                        <p class="etiqueta-prueba">IMPORTE</p>
+                         <p class="precio-curso">ARS {{ curso.precio }}</p>
+ 
+                         <a class="btn btn-danger btn-lg w-100 btn-inscripcion" href="#inscripcion">
+@@ -97,7 +97,7 @@
+                         </a>
+ 
+                         <p class="nota-pago">
+-                            El pago se completará en Mercado Pago cuando conectemos el checkout.
++                            El pago se completa de forma segura en Mercado Pago.
+                         </p>
+                     </article>
+                 </div>
+@@ -123,8 +123,8 @@
+                     <p class="seccion-etiqueta">TU PRÓXIMO PASO</p>
+                     <h2 class="titulo-seccion">EMPEZÁ TU INSCRIPCIÓN.</h2>
+                     <p class="texto-secundario">
+-                        Este formulario sigue siendo una práctica: por ahora recibe tu nombre,
+-                        pero todavía no guarda una inscripción ni inicia un pago.
++                        Elegí tu curso, completá tu nombre y te llevamos a Mercado Pago para pagar.
++                        Cuando se acredite el pago, tu inscripción queda confirmada.
+                     </p>
+                 </div>
+ 
