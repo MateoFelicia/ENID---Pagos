@@ -1,0 +1,16 @@
+{# Dibuja un campo de WTForms con etiqueta, ayuda y errores (estilo Bootstrap). #}
+{% macro campo(f) -%}
+<div class="mb-3">
+    {% if f.type == 'BooleanField' %}
+    <div class="form-check">
+        {{ f(class="form-check-input") }}
+        {{ f.label(class="form-check-label") }}
+    </div>
+    {% else %}
+    {{ f.label(class="form-label") }}
+    {{ f(class="form-control" ~ (" is-invalid" if f.errors else ""), **kwargs) }}
+    {% endif %}
+    {% if f.description %}<div class="form-text">{{ f.description }}</div>{% endif %}
+    {% for error in f.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+</div>
+{%- endmacro %}

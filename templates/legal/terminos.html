@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Términos y condiciones | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-9 texto-legal">
+        {% include "legal/_borrador.html" %}
+        <p class="seccion-etiqueta">LEGAL</p>
+        <h1 class="titulo-seccion mb-2">TÉRMINOS Y CONDICIONES</h1>
+        <p class="text-secondary">Última actualización: octubre de 2026.</p>
+
+        <h2>1. Quiénes somos</h2>
+        <p>Este sitio (ENID) es operado por {{ sitio.legal_titular or "el titular del sitio" }}{% if sitio.legal_cuit %}, CUIT {{ sitio.legal_cuit }}{% endif %}{% if sitio.legal_domicilio %}, con domicilio en {{ sitio.legal_domicilio }}{% endif %}.
+        {% if contacto_email %}Podés escribirnos a <a href="mailto:{{ contacto_email }}">{{ contacto_email }}</a>.{% endif %}</p>
+
+        <h2>2. Qué ofrecemos</h2>
+        <p>Cursos de formación futbolística en línea, compuestos por clases en vivo (por videollamada) y clases grabadas. Al inscribirte accedés al contenido del curso elegido desde tu cuenta.</p>
+
+        <h2>3. Tu cuenta</h2>
+        <ul>
+            <li>Para registrarte tenés que ser mayor de 18 años. Las personas menores de edad solo pueden participar con la autorización y bajo la responsabilidad de su madre, padre o tutor, quien debe realizar la inscripción y el pago.</li>
+            <li>Los datos que nos des tienen que ser verdaderos y estar actualizados.</li>
+            <li>El acceso es personal e intransferible. No compartas tu contraseña ni los enlaces de las clases.</li>
+        </ul>
+
+        <h2>4. Precios y pago</h2>
+        <p>Los precios están expresados en pesos argentinos (ARS). El pago se realiza a través de Mercado Pago: nosotros no recibimos ni guardamos los datos de tu tarjeta. El acceso al curso se habilita cuando el pago se acredita. Si preferís otro medio de pago (por ejemplo, transferencia), escribinos y coordinamos.</p>
+
+        <h2>5. Clases en vivo y grabadas</h2>
+        <p>Los horarios de las clases en vivo se informan en hora de Argentina y pueden reprogramarse por razones organizativas; te avisaremos por los medios disponibles. Las grabaciones se publican en el curso cuando están listas.</p>
+
+        <h2>6. Uso del contenido</h2>
+        <p>Todo el contenido del sitio y de los cursos (videos, textos, imágenes, grabaciones) pertenece a su titular. Está permitido su uso personal; no se puede grabar, copiar, publicar ni redistribuir sin autorización escrita.</p>
+
+        <h2>7. Derecho de arrepentimiento y devoluciones</h2>
+        <p>Podés revocar tu compra dentro de los 10 días corridos contados desde que la realizaste, usando el <a href="{{ url_for('sitio.arrepentimiento') }}">botón de arrepentimiento</a> de este sitio, sin necesidad de iniciar sesión. Te devolveremos el importe pagado por el mismo medio de pago y se dará de baja el acceso al curso.</p>
+
+        <h2>8. Actividad física</h2>
+        <p>Los contenidos incluyen ejercicios físicos. Antes de comenzar, consultá con un profesional de la salud si tenés dudas sobre tu aptitud física. Cada persona (o su responsable, si es menor) es responsable de realizar los ejercicios de forma segura y en un espacio adecuado.</p>
+
+        <h2>9. Conducta y suspensión</h2>
+        <p>Podemos suspender o cancelar el acceso de quien incumpla estos términos, comparta el contenido o tenga un comportamiento irrespetuoso hacia el equipo o hacia otros alumnos.</p>
+
+        <h2>10. Datos personales</h2>
+        <p>Tratamos tus datos según nuestra <a href="{{ url_for('sitio.privacidad') }}">política de privacidad</a>.</p>
+
+        <h2>11. Ley aplicable</h2>
+        <p>Estos términos se rigen por las leyes de la República Argentina. Los derechos que la Ley de Defensa del Consumidor (Ley 24.240) reconoce a las personas consumidoras no se ven afectados por lo aquí dispuesto.</p>
+    </div></div>
+</section>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Importar alumnos | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-3">Importar alumnos desde un CSV</h1>
+
+    {% if fase == 'subir' %}
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="bg-white rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold">1. Subí tu archivo</h2>
+                <p class="text-secondary small">En Excel o Google Sheets: <em>Archivo → Descargar / Guardar como → CSV</em>.
+                    Antes de importar vas a ver una vista previa y no se guarda nada hasta que confirmes.</p>
+                <form method="POST" enctype="multipart/form-data" class="d-flex flex-column gap-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="accion" value="previsualizar">
+                    <input class="form-control" type="file" name="archivo" accept=".csv,text/csv,text/plain" required>
+                    <div><button class="btn btn-danger" type="submit">Revisar archivo</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="bg-white rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold">Cómo armarlo</h2>
+                <p class="small mb-2">Columnas (la primera fila lleva los títulos):</p>
+                <ul class="small">
+                    <li><strong>nombre</strong> y <strong>email</strong>: obligatorios.</li>
+                    <li><strong>cursos</strong>: nombres separados con <code>|</code>, o <code>todos</code>.</li>
+                    <li><strong>medio</strong> (opcional): paypal, transferencia, efectivo, beca u otro.</li>
+                    <li><strong>nota</strong> (opcional): texto libre.</li>
+                </ul>
+                <p class="small mb-1">Cursos disponibles (escribilos igual):</p>
+                <ul class="small">
+                    {% for curso in cursos %}<li>{{ curso.nombre }}{% if not curso.activo %} <span class="text-secondary">(inactivo)</span>{% endif %}</li>{% else %}<li>Todavía no hay cursos.</li>{% endfor %}
+                </ul>
+                <a class="btn btn-outline-dark btn-sm" href="{{ url_for('gestion.plantilla_csv') }}">Descargar plantilla de ejemplo</a>
+            </div>
+        </div>
+    </div>
+
+    {% elif fase == 'vista_previa' %}
+    <p class="text-secondary">Revisá esto antes de confirmar. Las filas con errores se saltean.</p>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="badge text-bg-success fs-6">{{ validas }} listas para importar</span>
+        {% if con_errores %}<span class="badge text-bg-danger fs-6">{{ con_errores }} con errores</span>{% endif %}
+    </div>
+
+    <div class="table-responsive bg-white rounded-4 shadow-sm p-3 mb-4">
+        <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>Línea</th><th>Alumno</th><th>Cursos</th><th>Cuenta</th><th>Observaciones</th></tr></thead>
+            <tbody>
+            {% for f in filas %}
+            <tr class="{{ 'table-danger' if f.errores else ('table-secondary' if f.repetida_de else '') }}">
+                <td>{{ f.linea }}</td>
+                <td>{{ f.nombre }}<div class="small text-secondary">{{ f.email }}</div></td>
+                <td>
+                    {% for c in f.cursos_nuevos %}<span class="badge text-bg-success">{{ c.nombre }}</span> {% endfor %}
+                    {% for c in f.cursos_ya_tenia %}<span class="badge text-bg-light border text-dark" title="Ya tenía acceso">{{ c.nombre }} · ya tenía</span> {% endfor %}
+                </td>
+                <td>{% if f.valida %}{{ 'existente' if f.cuenta_existe else 'nueva' }}{% endif %}</td>
+                <td class="small">
+                    {% for e in f.errores %}<div class="text-danger">✘ {{ e }}</div>{% endfor %}
+                    {% if f.repetida_de %}<div class="text-secondary">Repetida: se unió a la línea {{ f.repetida_de }}</div>{% endif %}
+                    {% for a in f.avisos %}<div class="text-warning-emphasis">! {{ a }}</div>{% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <form method="POST" class="bg-white rounded-4 shadow-sm p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="accion" value="importar">
+        <textarea name="contenido" hidden>{{ contenido }}</textarea>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="invitar" value="1" id="invitar" {{ 'checked' if mail_ok else 'disabled' }}>
+            <label class="form-check-label" for="invitar">Enviar un mail con el acceso a cada alumno</label>
+            <div class="form-text">
+                {% if mail_ok %}Las cuentas nuevas reciben un enlace para elegir su contraseña (vence en 7 días).
+                {% else %}Los mails todavía no están configurados: al terminar te mostramos los enlaces para compartirlos a mano.{% endif %}
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-danger" type="submit" {{ '' if validas else 'disabled' }}>Importar {{ validas }} alumno{{ '' if validas == 1 else 's' }}</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('gestion.importar_alumnos') }}">Cancelar</a>
+        </div>
+    </form>
+
+    {% else %}
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+        <h2 class="h4 fw-bold text-success">¡Importación lista!</h2>
+        <ul class="mb-0">
+            <li>{{ resumen.filas_ok }} alumno{{ '' if resumen.filas_ok == 1 else 's' }} procesado{{ '' if resumen.filas_ok == 1 else 's' }}</li>
+            <li>{{ resumen.cuentas_nuevas | length }} cuenta{{ '' if resumen.cuentas_nuevas | length == 1 else 's' }} nueva{{ '' if resumen.cuentas_nuevas | length == 1 else 's' }}</li>
+            <li>{{ resumen.accesos }} acceso{{ '' if resumen.accesos == 1 else 's' }} concedido{{ '' if resumen.accesos == 1 else 's' }}{% if resumen.ya_tenian %} ({{ resumen.ya_tenian }} ya existían){% endif %}</li>
+            {% if mails_enviados %}<li>{{ mails_enviados }} mail{{ '' if mails_enviados == 1 else 's' }} enviado{{ '' if mails_enviados == 1 else 's' }}</li>{% endif %}
+        </ul>
+    </div>
+
+    {% if enlaces %}
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+        <h2 class="h5 fw-bold">Enlaces para que las cuentas nuevas elijan su contraseña</h2>
+        <p class="text-secondary small">Valen 7 días. Copialos y pegalos en una planilla: nombre, email y enlace separados por tabulación.</p>
+        <textarea class="form-control font-monospace small" rows="{{ [enlaces | length + 1, 12] | min }}" readonly onclick="this.select()">{% for nombre, email, enlace in enlaces %}{{ nombre }}	{{ email }}	{{ enlace }}
+{% endfor %}</textarea>
+    </div>
+    {% endif %}
+
+    <a class="btn btn-danger" href="{{ url_for('administrar_usuarios') }}">Ver alumnos</a>
+    <a class="btn btn-outline-dark" href="{{ url_for('gestion.importar_alumnos') }}">Importar otro archivo</a>
+    {% endif %}
+</section>
+{% endblock %}

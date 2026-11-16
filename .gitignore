@@ -1,11 +1,7 @@
 .env
-.venv/
-__pycache__/
-venv/
-Lib/
-Scripts/
-Include/
-pyvenv.cfg
 instance/
-var/
 *.db
+__pycache__/
+.venv/
+venv/
+.pytest_cache/

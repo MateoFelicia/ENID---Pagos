@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block title %}Contenido del sitio | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-4">Contenido del sitio</h1>
+    {% include "admin/_menu_sitio.html" %}
+
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="bg-white rounded-4 shadow-sm p-4 h-100">
+                    <h2 class="h5 fw-bold mb-1">El entrenador</h2>
+                    <p class="text-secondary small">Aparece en la portada como sección «El entrenador». Si lo dejás vacío, no se muestra.</p>
+                    {{ campo(form.entrenador_nombre) }}
+                    {{ campo(form.entrenador_titulo) }}
+                    {{ campo(form.entrenador_bio, rows="6") }}
+                    {% if sitio.entrenador_imagen_id %}
+                    <img src="{{ url_for('sitio.media', imagen_id=sitio.entrenador_imagen_id | int) }}" alt="Foto actual"
+                        class="rounded mb-2" style="max-height:140px">
+                    {{ campo(form.quitar_foto_entrenador) }}
+                    {% endif %}
+                    {{ campo(form.foto_entrenador, accept="image/*") }}
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+                    <h2 class="h5 fw-bold mb-1">Portada</h2>
+                    <p class="text-secondary small">Foto de fondo del inicio. Mejor horizontal y de buena calidad.</p>
+                    {% if sitio.portada_imagen_id %}
+                    <img src="{{ url_for('sitio.media', imagen_id=sitio.portada_imagen_id | int) }}" alt="Portada actual"
+                        class="rounded mb-2" style="max-height:120px">
+                    {{ campo(form.quitar_portada) }}
+                    {% endif %}
+                    {{ campo(form.imagen_portada, accept="image/*") }}
+                </div>
+
+                <div class="bg-white rounded-4 shadow-sm p-4">
+                    <h2 class="h5 fw-bold mb-3">Contacto</h2>
+                    {{ campo(form.whatsapp, placeholder="5493510000000") }}
+                    {{ campo(form.instagram, placeholder="@enid.futbol") }}
+                    {{ campo(form.email_contacto) }}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="bg-white rounded-4 shadow-sm p-4">
+                    <h2 class="h5 fw-bold mb-1">Datos legales</h2>
+                    <p class="text-secondary small">Se muestran en el pie de página y en los términos y la política de privacidad.</p>
+                    <div class="row">
+                        <div class="col-md-5">{{ campo(form.legal_titular) }}</div>
+                        <div class="col-md-3">{{ campo(form.legal_cuit) }}</div>
+                        <div class="col-md-4">{{ campo(form.legal_domicilio) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">{{ form.enviar(class="btn btn-danger btn-lg") }}</div>
+    </form>
+</section>
+{% endblock %}

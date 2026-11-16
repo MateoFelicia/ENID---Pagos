@@ -1,0 +1,13 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Clase en vivo {{ cuando }}{% endblock %}
+{% block contenido %}
+{{ titulo("CLASE EN VIVO " ~ (cuando | upper)) }}
+<p>Hola {{ usuario.nombre }}, te recordamos tu próxima clase de <strong>{{ curso.nombre }}</strong>:</p>
+<p style="margin:16px 0;padding:14px 16px;background:#f4f4f4;border-left:4px solid #d90429;">
+    <strong style="font-size:18px;">{{ clase.titulo }}</strong><br>
+    {{ clase.fecha | fecha_ar }}
+</p>
+{{ boton(url_curso, "ENTRAR A LA CLASE") }}
+<p style="color:#777777;font-size:14px;">Iniciá sesión en ENID y encontrá el enlace de Meet dentro del curso.</p>
+{% endblock %}

@@ -1,0 +1,12 @@
+<ul class="nav nav-pills mb-4 flex-wrap gap-1">
+    {% for clave, etiqueta, endpoint in [
+        ('ajustes', 'Ajustes', 'sitio.admin_sitio'),
+        ('fotos', 'Fotos', 'sitio.admin_fotos'),
+        ('testimonios', 'Testimonios', 'sitio.admin_testimonios'),
+        ('preguntas', 'Preguntas frecuentes', 'sitio.admin_preguntas'),
+    ] %}
+    <li class="nav-item">
+        <a class="nav-link {{ 'active bg-danger' if seccion == clave else 'text-dark' }}" href="{{ url_for(endpoint) }}">{{ etiqueta }}</a>
+    </li>
+    {% endfor %}
+</ul>

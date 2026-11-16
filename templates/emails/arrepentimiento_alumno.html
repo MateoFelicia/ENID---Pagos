@@ -1,0 +1,12 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Solicitud recibida{% endblock %}
+{% block contenido %}
+{{ titulo("RECIBIMOS TU SOLICITUD") }}
+<p>Hola {{ solicitud.nombre }}, registramos tu pedido de revocación (arrepentimiento) de la compra.</p>
+<p style="margin:16px 0;padding:14px 16px;background:#f4f4f4;border-left:4px solid #d90429;">
+    Código de tu solicitud: <strong>{{ solicitud.codigo }}</strong>
+    {% if solicitud.referencia %}<br>Compra: {{ solicitud.referencia }}{% endif %}
+</p>
+<p>Vamos a responderte a este mail para coordinar la devolución del importe. Guardá el código por cualquier consulta.</p>
+{% endblock %}

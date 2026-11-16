@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Listo | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-6">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5 text-center">
+            <h1 class="h3 fw-bold mb-3">Listo, ya no te enviaremos avisos de clases.</h1>
+            <p class="text-secondary">Si cambiás de idea, podés volver a activarlos desde «Mi cuenta».</p>
+            <a class="btn btn-danger" href="{{ url_for('inicio') }}">Ir al inicio</a>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

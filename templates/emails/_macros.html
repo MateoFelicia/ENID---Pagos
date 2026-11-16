@@ -1,0 +1,13 @@
+{% macro boton(url, texto) -%}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;">
+    <tr>
+        <td style="background:#d90429;border-radius:4px;">
+            <a href="{{ url }}" style="display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;letter-spacing:1px;color:#ffffff;text-decoration:none;">{{ texto }}</a>
+        </td>
+    </tr>
+</table>
+{%- endmacro %}
+
+{% macro titulo(texto) -%}
+<h1 style="margin:0 0 16px;font-family:Impact,'Arial Black',Arial,sans-serif;font-size:28px;font-weight:normal;letter-spacing:1px;color:#0a0a0a;">{{ texto }}</h1>
+{%- endmacro %}

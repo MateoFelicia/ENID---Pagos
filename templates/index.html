@@ -2,9 +2,14 @@
 
 {% block title %}Cursos de fútbol | Escuela de fútbol{% endblock %}
 
+{% block descripcion %}Cursos de fútbol con clases en vivo y grabadas. Inscribite online y pagá de forma segura con Mercado Pago.{% endblock %}
+
+{% block body_class %}con-portada{% endblock %}
+
 {% block content %}
 <main>
-    <section class="portada">
+    <section class="portada"
+        {% if sitio.portada_imagen_id %}style="background: linear-gradient(to top, #0a0a0a, transparent 45%), linear-gradient(90deg, rgba(10, 10, 10, 0.92), rgba(10, 10, 10, 0.38)), url('{{ url_for('sitio.media', imagen_id=sitio.portada_imagen_id | int) }}') center / cover;"{% endif %}>
         <div class="container portada-contenido">
             <p class="portada-etiqueta">FORMACIÓN FUTBOLÍSTICA</p>
 
@@ -18,7 +23,7 @@
             </p>
 
             <div class="d-flex flex-column flex-sm-row gap-3">
-                <a class="btn btn-danger btn-lg btn-inscripcion" href="#inscripcion">
+                <a class="btn btn-danger btn-lg btn-inscripcion" href="#precio">
                     QUIERO INSCRIBIRME
                 </a>
                 <a class="btn btn-outline-light btn-lg" href="#propuesta">
@@ -67,6 +72,60 @@
         </div>
     </section>
 
+    {% if sitio.entrenador_nombre or sitio.entrenador_bio %}
+    <section class="seccion-gris py-5" id="entrenador">
+        <div class="container py-lg-5">
+            <div class="row align-items-center g-5">
+                {% if sitio.entrenador_imagen_id %}
+                <div class="col-lg-5">
+                    <div class="entrenador-foto">
+                        <img src="{{ url_for('sitio.media', imagen_id=sitio.entrenador_imagen_id | int) }}"
+                            alt="{{ sitio.entrenador_nombre or 'El entrenador' }}" width="440" height="550" loading="lazy">
+                    </div>
+                </div>
+                {% endif %}
+                <div class="{{ 'col-lg-7' if sitio.entrenador_imagen_id else 'col-lg-8 mx-auto' }}">
+                    <p class="seccion-etiqueta">EL ENTRENADOR</p>
+                    {% if sitio.entrenador_nombre %}
+                    <h2 class="titulo-seccion">{{ sitio.entrenador_nombre | upper }}</h2>
+                    {% endif %}
+                    {% if sitio.entrenador_titulo %}
+                    <p class="fw-semibold text-danger mt-2">{{ sitio.entrenador_titulo }}</p>
+                    {% endif %}
+                    {% if sitio.entrenador_bio %}
+                    <p class="entrenador-texto mt-4 mb-0">{{ sitio.entrenador_bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="py-5" id="como-funciona">
+        <div class="container py-lg-5">
+            <p class="seccion-etiqueta">ASÍ DE SIMPLE</p>
+            <h2 class="titulo-seccion">EMPEZÁ EN TRES PASOS.</h2>
+
+            <div class="row g-4 mt-3">
+                <div class="col-md-4 paso">
+                    <span class="paso-numero">1</span>
+                    <h3>ELEGÍ TU CURSO</h3>
+                    <p class="texto-secundario">Creás tu cuenta en un minuto y elegís el curso que más te sirva.</p>
+                </div>
+                <div class="col-md-4 paso">
+                    <span class="paso-numero">2</span>
+                    <h3>PAGÁ SEGURO</h3>
+                    <p class="texto-secundario">Pagás con Mercado Pago. Apenas se acredita, el acceso se habilita solo.</p>
+                </div>
+                <div class="col-md-4 paso">
+                    <span class="paso-numero">3</span>
+                    <h3>ENTRÁ Y ENTRENÁ</h3>
+                    <p class="texto-secundario">Clases en vivo por Meet y clases grabadas para ver cuando quieras.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="corte corte-claro-oscuro" aria-hidden="true">
         <svg viewBox="0 0 1440 84" preserveAspectRatio="none">
             <polygon points="0,0 1440,84 0,84"></polygon>
@@ -86,19 +145,42 @@
                         <p class="seccion-etiqueta">INSCRIPCIÓN ENID</p>
                         <h3>{{ curso.nombre }}</h3>
                         <p>{{ curso.descripcion or "Formación futbolística ENID." }}</p>
+                        {% set n_clases = curso.clases | selectattr('publicada') | list | length %}
+                        {% if n_clases %}
+                        <p class="mb-2"><strong>{{ n_clases }} clase{{ '' if n_clases == 1 else 's' }}</strong>, en vivo y grabadas</p>
+                        {% endif %}
 
+                        <div class="mt-auto">
                         <hr>
 
-                        <p class="etiqueta-prueba">IMPORTE DE PRUEBA</p>
-                        <p class="precio-curso">ARS {{ curso.precio }}</p>
-
-                        <a class="btn btn-danger btn-lg w-100 btn-inscripcion" href="#inscripcion">
-                            CONTINUAR
+                        <p class="etiqueta-prueba">IMPORTE</p>
+                        <p class="precio-curso">ARS {{ curso.precio | ars }}</p>
+                        {% set estado = estados.get(curso.id) %}
+                        {% if estado == 'acceso' %}
+                        <a class="btn btn-outline-light btn-lg w-100"
+                            href="{{ url_for('ver_curso', curso_id=curso.id) }}">
+                            ENTRAR AL CURSO
                         </a>
-
+                        {% elif current_user.is_authenticated %}
+                        <form method="POST" action="{{ url_for('comprar_curso', curso_id=curso.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-lg w-100 btn-inscripcion">
+                                {% if estado == 'pendiente' %}COMPLETAR PAGO{% else %}INSCRIBIRME{% endif %}
+                            </button>
+                        </form>
+                        <p class="nota-pago">El pago se completa de forma segura en Mercado Pago.</p>
+                        {% else %}
+                        <a class="btn btn-danger btn-lg w-100 btn-inscripcion"
+                            href="{{ url_for('registro', next=url_for('inicio') ~ '#precio') }}">
+                            INSCRIBIRME
+                        </a>
                         <p class="nota-pago">
-                            El pago se completará en Mercado Pago cuando conectemos el checkout.
+                            Creás tu cuenta en un minuto y pagás de forma segura con Mercado Pago.
+                            ¿Ya tenés cuenta?
+                            <a class="link-danger" href="{{ url_for('iniciar_sesion', next=url_for('inicio') ~ '#precio') }}">Iniciá sesión</a>
                         </p>
+                        {% endif %}
+                        </div>
                     </article>
                 </div>
                 {% else %}
@@ -108,58 +190,122 @@
         </div>
     </section>
 
-
     <div class="corte corte-oscuro-claro" aria-hidden="true">
         <svg viewBox="0 0 1440 84" preserveAspectRatio="none">
             <polygon points="0,84 1440,0 1440,84"></polygon>
         </svg>
     </div>
 
-
-    <section class="seccion-inscripcion py-5" id="inscripcion">
+    {% if testimonios %}
+    <section class="py-5" id="testimonios">
         <div class="container py-lg-4">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-5">
-                    <p class="seccion-etiqueta">TU PRÓXIMO PASO</p>
-                    <h2 class="titulo-seccion">EMPEZÁ TU INSCRIPCIÓN.</h2>
-                    <p class="texto-secundario">
-                        Este formulario sigue siendo una práctica: por ahora recibe tu nombre,
-                        pero todavía no guarda una inscripción ni inicia un pago.
-                    </p>
-                </div>
+            <p class="seccion-etiqueta">LO QUE DICEN</p>
+            <h2 class="titulo-seccion">ELLOS YA ENTRENAN CON ENID.</h2>
 
-<div class="col-lg-7">
-                        <div class="formulario-tarjeta">
-                            <form method="POST">
-                                {{ form.hidden_tag() }}
-
-                                {{ form.curso_id.label(class="form-label") }}
-                                {{ form.curso_id(class="form-select form-select-lg") }}
-
-                                {% for error in form.curso_id.errors %}
-                                <p class="text-danger small mt-2">{{ error }}</p>
-                                {% endfor %}
-
-                                {{ form.nombre.label(class="form-label mt-3") }}
-                                {{ form.nombre(class="form-control form-control-lg", placeholder="Tu nombre") }}
-
-                                {% for error in form.nombre.errors %}
-                                <p class="text-danger small mt-2">{{ error }}</p>
-                                {% endfor %}
-
-                                <div class="mt-4">
-                                    {{ form.enviar(class="btn btn-danger btn-lg w-100") }}
-                                </div>
-                            </form>
-
-                            {% if mensaje %}
-                            <div class="alert alert-success mt-4 mb-0" role="alert">
-                                {{ mensaje }}
-                            </div>
+            <div class="row g-4 mt-3">
+                {% for t in testimonios %}
+                <div class="col-md-6 col-lg-4 d-flex">
+                    <figure class="tarjeta-testimonio mb-0 w-100">
+                        <blockquote>“{{ t.texto }}”</blockquote>
+                        <figcaption class="testimonio-autor">
+                            {% if t.imagen_id %}
+                            <img class="testimonio-foto" src="{{ url_for('sitio.media', imagen_id=t.imagen_id) }}"
+                                alt="" width="52" height="52" loading="lazy">
+                            {% else %}
+                            <span class="testimonio-inicial" aria-hidden="true">{{ t.nombre[:1] | upper }}</span>
                             {% endif %}
-                        </div>
-                    </div>
+                            <span>
+                                <strong class="d-block">{{ t.nombre }}</strong>
+                                {% if t.detalle %}<small class="text-secondary">{{ t.detalle }}</small>{% endif %}
+                            </span>
+                        </figcaption>
+                    </figure>
+                </div>
+                {% endfor %}
             </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if fotos %}
+    <section class="{{ 'seccion-gris' if testimonios else '' }} py-5" id="galeria">
+        <div class="container py-lg-4">
+            <p class="seccion-etiqueta">EN LA CANCHA</p>
+            <h2 class="titulo-seccion">MOMENTOS ENID.</h2>
+
+            <div class="row g-3 mt-3">
+                {% for f in fotos %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <button type="button" class="galeria-item" data-bs-toggle="modal" data-bs-target="#visorFoto"
+                        data-src="{{ url_for('sitio.media', imagen_id=f.imagen_id) }}" data-pie="{{ f.pie or '' }}"
+                        aria-label="Ver foto{{ ': ' ~ f.pie if f.pie else '' }}">
+                        <img src="{{ url_for('sitio.media', imagen_id=f.imagen_id) }}" alt="{{ f.pie or 'Foto de ENID' }}"
+                            width="400" height="300" loading="lazy">
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <div class="modal fade" id="visorFoto" tabindex="-1" aria-label="Foto ampliada" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-black border-0">
+                <div class="modal-body p-0 text-center position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal" aria-label="Cerrar" style="z-index:2"></button>
+                    <img id="visorImagen" src="" alt="" class="img-fluid" style="max-height:80vh">
+                    <p id="visorPie" class="text-white-50 mb-0 p-3"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("visorFoto").addEventListener("show.bs.modal", function (e) {
+            var b = e.relatedTarget;
+            document.getElementById("visorImagen").src = b.dataset.src;
+            document.getElementById("visorImagen").alt = b.dataset.pie || "Foto de ENID";
+            document.getElementById("visorPie").textContent = b.dataset.pie || "";
+        });
+    </script>
+    {% endif %}
+
+    <section class="py-5 preguntas {{ 'seccion-gris' if not fotos and not testimonios else '' }}" id="preguntas">
+        <div class="container py-lg-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <p class="seccion-etiqueta">DUDAS FRECUENTES</p>
+                    <h2 class="titulo-seccion mb-4">PREGUNTAS FRECUENTES.</h2>
+
+                    <div class="accordion" id="acordeonPreguntas">
+                        {% for pregunta, respuesta in preguntas %}
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button {{ '' if loop.first else 'collapsed' }}" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#pregunta{{ loop.index }}"
+                                    aria-expanded="{{ 'true' if loop.first else 'false' }}"
+                                    aria-controls="pregunta{{ loop.index }}">{{ pregunta }}</button>
+                            </h3>
+                            <div id="pregunta{{ loop.index }}"
+                                class="accordion-collapse collapse {{ 'show' if loop.first else '' }}"
+                                data-bs-parent="#acordeonPreguntas">
+                                <div class="accordion-body" style="white-space: pre-line;">{{ respuesta }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="banda-final py-5">
+        <div class="container py-lg-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+            <div>
+                <h2 class="titulo-seccion mb-2 text-white">¿LISTO PARA EMPEZAR?</h2>
+                <p class="mb-0 opacity-75">Elegí tu curso y entrá a la primera clase hoy.</p>
+            </div>
+            <a class="btn btn-light btn-lg" href="#precio">VER LOS CURSOS</a>
         </div>
     </section>
 </main>

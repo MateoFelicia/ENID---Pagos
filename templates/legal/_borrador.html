@@ -1,0 +1,10 @@
+{% if current_user.is_authenticated and current_user.es_admin %}
+<div class="alert alert-warning borrador-legal" role="alert">
+    <strong>Borrador solo visible para administradores.</strong>
+    Este texto es un modelo de partida: revisalo con un abogado o contador antes de cobrar de verdad, y completá los datos
+    del titular en <a href="{{ url_for('sitio.admin_sitio') }}">Administración → Contenido del sitio</a>.
+    {% if not sitio.legal_titular or not sitio.legal_cuit or not sitio.legal_domicilio %}
+    <br>Todavía faltan datos del titular (nombre o razón social, CUIT y domicilio).
+    {% endif %}
+</div>
+{% endif %}

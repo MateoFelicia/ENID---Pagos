@@ -1,0 +1,13 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Solicitud de arrepentimiento{% endblock %}
+{% block contenido %}
+{{ titulo("NUEVA SOLICITUD DE ARREPENTIMIENTO") }}
+<p><strong>Código:</strong> {{ solicitud.codigo }}<br>
+<strong>Nombre:</strong> {{ solicitud.nombre }}<br>
+<strong>Email:</strong> {{ solicitud.email }}<br>
+{% if solicitud.referencia %}<strong>Compra:</strong> {{ solicitud.referencia }}<br>{% endif %}
+{% if solicitud.motivo %}<strong>Motivo:</strong> {{ solicitud.motivo }}{% endif %}</p>
+<p>Para devolver el dinero, hacé el reembolso desde tu cuenta de Mercado Pago: al confirmarse, ENID le quita el acceso automáticamente.</p>
+{{ boton(url_panel, "VER SOLICITUDES") }}
+{% endblock %}

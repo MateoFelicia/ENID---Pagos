@@ -1,167 +1,149 @@
-# ENID - Sistema de Inscripciones y Pagos
+# ENID — Cursos de fútbol con pagos por Mercado Pago
 
-Aplicación web para la gestión de cursos, inscripciones y pagos de la Escuela de Formación Futbolística ENID, con integración de Mercado Pago (Checkout Pro).
+Web para vender cursos de fútbol (clases en vivo por Meet + grabación), cobrar con **Mercado Pago (Checkout Pro)** y dar acceso solo a quienes pagaron. Incluye un panel para el dueño (alumnos, accesos, clases, contenido del sitio), mails automáticos y todo lo necesario para publicarla con dominio propio y HTTPS.
 
-## Características
+| Quiero… | Dónde está |
+|---|---|
+| Probarla en mi compu con pagos de mentira | [Puesta en marcha](#puesta-en-marcha-10-minutos) y [Probar pagos de mentira](#probar-pagos-de-mentira-con-mercado-pago) |
+| Publicarla con dominio y cobrar de verdad | **[docs/ONLINE.md](docs/ONLINE.md)** |
+| Configurar los mails y los recordatorios | **[docs/MAILS.md](docs/MAILS.md)** |
 
-- **Landing page** responsive con Bootstrap 5 (mobile-first)
-- **Catálogo de cursos** públicos con precios
-- **Inscripción a cursos** con creación de preferencia de pago en Mercado Pago
-- **Webhook de Mercado Pago** para confirmación automática de pagos
-- **Sistema de usuarios**: registro, inicio/cierre de sesión, contraseñas hasheadas (bcrypt)
-- **Panel de administración** (solo admins):
-  - Gestión de cursos (crear, editar, desactivar)
-  - Listado de inscripciones con estado de pago
-- **Base de datos** SQLite con migraciones (Alembic/Flask-Migrate)
+## Cómo funciona
 
-## Tecnologías
+1. La persona entra a la web, **crea su cuenta** (o inicia sesión) y elige un curso.
+2. **INSCRIBIRME** crea una inscripción *pendiente* y la manda a Mercado Pago.
+3. Al pagar, Mercado Pago avisa por **webhook** (firmado) y la web **vuelve a consultar el pago a la API de MP** antes de acreditar. Si el alumno vuelve a la web antes de que llegue el webhook, la vuelta también se confirma contra la API (la URL sola nunca da acceso).
+4. La inscripción pasa a *pagada* y en **Mis inscripciones** aparece *Entrar al curso*: la lista de **clases** del curso, las en vivo con su horario (hora de Argentina) y link de Meet y las grabadas con su video.
+5. El dueño ve todo en **Alumnos** (`/admin/usuarios`) y puede **dar acceso a mano a quien quiera** (alguien que pagó por PayPal o transferencia, becas, alumnos de antes de la web) y quitárselo cuando quiera.
 
-| Capa | Tecnología |
-|------|------------|
-| Backend | Flask 3, Python 3.11+ |
-| Base de datos | SQLAlchemy 2 + SQLite |
-| Migraciones | Flask-Migrate / Alembic |
-| Autenticación | Flask-Login |
-| Formularios | Flask-WTF + WTForms |
-| Pagos | Mercado Pago SDK (Checkout Pro) |
-| Frontend | Bootstrap 5.3, plantillas Jinja2 |
-| Entorno | python-dotenv, virtualenv |
+Un reembolso o contracargo en Mercado Pago revoca el acceso automáticamente. Cada paso importante genera un **mail** (bienvenida, comprobante de pago, acceso dado a mano, recordatorios de clases).
 
-## Estructura del proyecto
-
-```
-appPagos/
-├── app.py              # Aplicación principal (rutas, webhook, config)
-├── models.py           # Modelos: Usuario, Curso, Inscripcion, Pago
-├── forms.py            # Formularios WTForms
-├── db.py               # Instancia SQLAlchemy
-├── requirements.txt    # Dependencias
-├── .env                # Variables de entorno (no versionar)
-├── migrations/         # Migraciones Alembic
-├── templates/
-│   ├── base.html       # Layout principal + navbar
-│   ├── index.html      # Landing + formulario inscripción
-│   ├── registro.html
-│   ├── iniciar_sesion.html
-│   ├── mis_inscripciones.html
-│   └── admin/
-│       ├── cursos.html
-│       ├── curso_form.html
-│       └── inscripciones.html
-└── static/
-    └── css/estilos.css
-```
-
-## Configuración
-
-### 1. Clonar y crear entorno virtual
+## Puesta en marcha (≈10 minutos)
 
 ```bash
-cd appPagos
 python -m venv venv
-venv\Scripts\activate      # Windows
-# source venv/bin/activate  # Linux/macOS
-```
-
-### 2. Instalar dependencias
-
-```bash
+venv\Scripts\activate            # Windows   (Linux/macOS: source venv/bin/activate)
 pip install -r requirements.txt
+
+copy .env.example .env           # (Linux/macOS: cp .env.example .env) y completalo — ver más abajo
+
+flask db upgrade                 # crea las tablas
+flask crear-admin                # crea la cuenta del dueño (pide email y contraseña)
+flask seed-cursos                # opcional: 3 cursos de ejemplo (después los editás desde el panel)
+flask run                        # http://127.0.0.1:5000
 ```
 
-### 3. Variables de entorno (`.env`)
+Variables del `.env` (hay un `.env.example` comentado):
 
-Crea un archivo `.env` en la raíz del proyecto:
+| Variable | Para qué |
+|---|---|
+| `SECRET_KEY` | Obligatoria. `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `MP_ACCESS_TOKEN` | Access Token de Mercado Pago (en el piloto, el de **prueba**) |
+| `MP_WEBHOOK_SECRET` | Clave secreta que genera Mercado Pago al configurar el webhook |
+| `PUBLIC_URL` | URL pública **https** de la web (ngrok hoy, dominio mañana). A ella vuelve el comprador |
+| `MAIL_*` | Opcional. Sin `MAIL_USERNAME`, los mails se imprimen en la consola |
 
-```env
-SECRET_KEY=tu-clave-secreta-larga-y-aleatoria
-MP_ACCESS_TOKEN=APP_USR-xxxxxxxxxxxxxxxxxxxxxxxx
-MP_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxx
-```
+## Probar pagos de mentira con Mercado Pago
 
-- `SECRET_KEY`: cualquier string largo y aleatorio (usar `python -c "import secrets; print(secrets.token_hex(32))"`)
-- `MP_ACCESS_TOKEN`: Access Token de tu aplicación de Mercado Pago (producción o test)
-- `MP_WEBHOOK_SECRET`: Clave secreta del webhook (se obtiene al configurar el webhook en el panel de Mercado Pago)
+1. En [Mercado Pago Developers](https://www.mercadopago.com.ar/developers) → **Tus integraciones** → tu aplicación (Checkout Pro). Con la aplicación se crea una **cuenta de prueba vendedor**; sus credenciales son las de prueba (el Access Token también empieza con `APP_USR-`). Copialo en `MP_ACCESS_TOKEN`.
+2. En **Cuentas de prueba** abrí la cuenta **Comprador** (usuario y contraseña). Si al iniciar sesión pide un código por email, está en esa misma tabla.
+3. Exponé tu servidor: `ngrok http 5000` y pegá la URL https en `PUBLIC_URL`. Reiniciá `flask run` (el `.env` se lee al arrancar). La cuenta gratuita de ngrok incluye un dominio fijo asignado (dashboard → *Domains*), así que la URL **no cambia** al reiniciar. Eso sí, en el navegador muestra una pantalla de advertencia la primera vez (cookie de 7 días): para probar sobra, para alumnos reales no.
+4. **Webhook:** Tus integraciones → tu app → **Webhooks → Configurar notificaciones** → pestaña de **prueba** → URL `https://TU-URL/webhooks/mercadopago` → evento **Pagos** → Guardar. Copiá la **clave secreta** en `MP_WEBHOOK_SECRET` y reiniciá. El botón *Simular* de esa pantalla sirve para ver si llega.
+5. Hacé la compra en una **ventana de incógnito**, entrando a Mercado Pago con el usuario **comprador de prueba**. Tarjetas de prueba de Argentina (vencimiento 11/30):
 
-### 4. Inicializar base de datos
+   | Tarjeta | Número | Código |
+   |---|---|---|
+   | Visa | 4509 9535 6623 3704 | 123 |
+   | Mastercard | 5031 7557 3453 0604 | 123 |
+   | Mastercard débito | 5287 3383 1025 3304 | 123 |
 
-```bash
-flask db upgrade
-```
+   El **nombre del titular** define el resultado: `APRO` aprueba el pago; por ejemplo `FUND` simula fondos insuficientes y `SECU` un código de seguridad inválido. La tabla completa (y el documento a cargar) está en la documentación oficial: *Checkout Pro → Integración → Realizar compras de prueba*.
 
-Esto creará las tablas `cursos`, `inscripciones`, `pagos`, `usuarios` y aplicará las migraciones de usuario y rol admin.
+## Checklist del piloto (lo que tiene que andar)
 
-### 5. (Opcional) Crear usuario administrador
+- [ ] Cuenta nueva → compra con `APRO` → vuelve a la web → *Mis inscripciones* dice **Pagada** → *Entrar al curso* muestra Meet y grabación.
+- [ ] Compra con `FUND` → queda **Pendiente**, sin acceso → *Completar pago* reintenta sin duplicar filas.
+- [ ] Un usuario sin pagar abriendo `/curso/1` es redirigido (sin acceso).
+- [ ] Dueño → **Alumnos**: aparece la cuenta con su curso y el total cobrado.
+- [ ] Dueño → **Cursos → Clases**: cargá una clase grabada y una en vivo; el alumno con acceso las ve (la próxima destacada), el que no pagó no.
+- [ ] Dueño → **Dar acceso a un alumno** con un email nuevo y varios cursos: muestra un enlace para que el alumno elija su contraseña; con ese enlace entra a los cursos. Después, *Alumnos → quitar acceso* se lo saca.
+- [ ] Dueño → **Inscripciones → Eliminar** para limpiar las pruebas antes de salir a producción.
 
-```bash
-flask shell
->>> from app import app, db
->>> from models import Usuario
->>> with app.app_context():
-...     u = Usuario(nombre="Admin", email="admin@enid.com")
-...     u.establecer_password("tu-password")
-...     u.es_admin = True
-...     db.session.add(u)
-...     db.session.commit()
-```
+## Clases: en vivo y grabadas
 
-### 6. Ejecutar en desarrollo
+Cada curso tiene **varias clases**. Una clase puede ser:
 
-```bash
-flask run
-# o: python app.py
-```
+- **En vivo:** fecha y hora (se muestran como *hora de Argentina*, porque hay alumnos en otros países) + link de Meet. Se destaca como *Próxima clase en vivo* y pasa a *En vivo ahora* durante unas 2 horas.
+- **Grabada:** link al video (Drive, YouTube no listado…). Si una clase en vivo ya tiene grabación, se muestra el video.
+- **Borrador:** desmarcá *Visible para los alumnos* y solo la ves vos hasta que la publiques.
 
-La app estará en `http://127.0.0.1:5000`.
+Flujo típico: creás la clase en vivo con su Meet → pasa la clase → la editás y pegás el link de la grabación. Los links tienen que empezar con `http://` o `https://`.
 
-## Webhook de Mercado Pago (producción)
+## Panel del dueño
 
-Para que los pagos se confirmen automáticamente:
+| Ruta | Qué hace |
+|---|---|
+| `/admin/usuarios` | Todos los usuarios con **fecha de alta y último ingreso**, sus cursos, estado, medio de pago (Mercado Pago, PayPal, transferencia...), fecha y nota; métricas, buscador y **Exportar CSV** |
+| `/admin/inscripciones/nueva` | **Dar acceso** a un alumno a uno, varios o todos los cursos, anotando el medio de pago y una nota (crea la cuenta y le manda el mail) |
+| `/admin/alumnos/importar` | **Importar alumnos desde un CSV** con vista previa, validación fila por fila y mails de invitación opcionales |
+| `/admin/inscripciones` | Todas las inscripciones con su pago; eliminación |
+| `/admin/cursos` y `/admin/cursos/<id>/clases` | Cursos (nombre, descripción, precio) y sus **clases** (en vivo, grabadas o ambas; borradores; aviso por mail al guardar) |
+| `/admin/sitio` | **Contenido del sitio:** entrenador, foto de portada, galería de fotos, testimonios, preguntas frecuentes, WhatsApp / Instagram / email, datos legales |
+| `/admin/arrepentimientos` | Solicitudes del botón de arrepentimiento |
 
-1. En el panel de Mercado Pago > Tu aplicación > Webhooks
-2. Agregar URL: `https://TU_DOMINIO/webhooks/mercadopago`
-3. Seleccionar evento: `payment`
-4. Copiar la **clave secreta** al `.env` como `MP_WEBHOOK_SECRET`
+Notas:
+- El botón **Enlace de acceso** (en Alumnos) genera un enlace de 7 días para que un alumno defina o recupere su contraseña.
+- Las fotos se achican y se guardan **dentro de la base de datos**: viajan con los backups y no dependen del disco del hosting.
+- Las páginas **Términos y condiciones** y **Política de privacidad** son un modelo de partida (con tus datos de titular): hacelas revisar por un profesional antes de cobrar.
+- El **botón de arrepentimiento** está en el pie de todas las páginas, sin necesidad de iniciar sesión (Res. 424/2020 de la Secretaría de Comercio Interior). La devolución del dinero se hace desde Mercado Pago; al confirmarse, la web quita el acceso sola.
 
-**Importante**: En desarrollo local usa [ngrok](https://ngrok.com/) para exponer tu puerto 5000:
-
-```bash
-ngrok http 5000
-# Usa la URL https que te dé ngrok como webhook URL
-```
-
-## Flujo de pago
-
-1. Usuario elige curso en la landing → clic "INSCRIBIRME"
-2. Completa nombre (y email si no está logueado) → envía formulario
-3. Se crea `Inscripcion` (estado=pendiente) + `Pago` (estado=pendiente)
-4. Se crea preferencia en Mercado Pago → redirige a Checkout Pro
-5. Usuario paga → Mercado Pago envía webhook a `/webhooks/mercadopago`
-6. Webhook valida firma, consulta el pago, actualiza `Pago.estado` e `Inscripcion.estado`
+### Importar alumnos por CSV
+En Excel o Google Sheets armá una planilla con las columnas `nombre`, `email`, `cursos` (nombres separados con `|`, o `todos`) y, si querés, `medio` y `nota`; guardala como CSV y subila en **Importar alumnos**. Primero ves una vista previa (cuentas nuevas, accesos nuevos, errores por fila) y recién al confirmar se guarda. Importar el mismo archivo dos veces no duplica nada. Hay una plantilla de ejemplo para descargar en esa pantalla.
 
 ## Comandos útiles
 
+| Comando | Para qué |
+|---|---|
+| `flask db upgrade` | Crea o actualiza las tablas (correrlo después de cada actualización) |
+| `flask crear-admin` | Crea (o promueve) un administrador |
+| `flask seed-cursos` | Carga cursos y clases de ejemplo |
+| `flask verificar-config` | Revisa que la configuración esté lista para cobrar de verdad |
+| `flask probar-mail tu@correo.com` | Prueba el envío de mails y muestra el error exacto si falla |
+| `flask enviar-recordatorios [--dry-run]` | Recordatorios de clases en vivo (programarlo cada 10 minutos) |
+| `scripts/backup.sh` | Copia de seguridad comprimida de la base |
+
+## Poner online
+
+La guía paso a paso está en **[docs/ONLINE.md](docs/ONLINE.md)**: servidor propio con `docker compose up` (HTTPS automático con Caddy, PostgreSQL, recordatorios y backups) o un hosting con `Dockerfile`, más el pase de Mercado Pago a producción y un checklist de salida.
+
+En resumen: en producción usá credenciales productivas de Mercado Pago, `PUBLIC_URL` con tu dominio https, PostgreSQL (no SQLite en un disco efímero), mails SMTP configurados y `flask verificar-config` sin errores. Rotá `SECRET_KEY`, el Access Token y la clave del webhook si alguna vez estuvieron en un repositorio o en un zip compartido.
+
+## Tests
+
 ```bash
-# Crear migración tras cambios en models.py
-flask db migrate -m "descripcion del cambio"
-
-# Aplicar migraciones
-flask db upgrade
-
-# Ver migraciones pendientes
-flask db history
-
-# Ejecutar tests (si existen)
-pytest
+pip install -r requirements-dev.txt
+pytest tests
 ```
 
-## Notas de seguridad
+Cubren el circuito completo con Mercado Pago simulado (registro → compra → webhook firmado → acceso, firma inválida, monto alterado, rechazos, reembolsos, retorno sin webhook), clases, dar y quitar acceso, importación CSV, mails y recordatorios (sin duplicados), subida y optimización de fotos, testimonios, páginas legales, arrepentimiento, cabeceras de seguridad, límite de intentos y verificación de configuración. Para correrlos contra PostgreSQL: `TEST_DATABASE_URL=postgresql://usuario:clave@localhost/base_de_prueba pytest tests`. `scripts/probar_webhook.py` manda un webhook firmado a tu servidor local.
 
-- Nunca commitees el archivo `.env` ni la base de datos `pagos.db`
-- Usa credenciales de **producción** solo en entorno real con HTTPS
-- El webhook valida firma HMAC (`x-signature`, `x-request-id`) antes de procesar
-- Las contraseñas se almacenan como hash bcrypt (`werkzeug.security`)
+## Estructura
 
-## Licencia
-
-Uso interno - ENID Formación Futbolística
+```
+app.py            compra, pagos y webhook, cuentas, panel de alumnos/cursos/clases, seguridad, errores
+sitio.py          contenido del sitio (fotos, testimonios, preguntas, ajustes), legales, arrepentimiento, /salud
+gestion.py        Mi cuenta, baja de avisos, importación CSV, tarea de recordatorios, comandos de consola
+emailer.py        envío de mails (SMTP), enlaces firmados, mensajes
+avisos.py         recordatorios y avisos de clases (sin duplicados)
+importador.py     lectura y validación del CSV de alumnos
+imagenes.py       validación y optimización de fotos
+models.py         Usuario, Curso, Clase, Inscripcion, Pago, Imagen, Foto, Testimonio, ...
+forms.py          formularios WTForms
+migrations/       Alembic (flask db upgrade)
+templates/        Jinja2 (admin/ panel, emails/, legal/, errores/)
+static/           estilos, Bootstrap y fuentes alojados en el propio sitio (sin CDN)
+Dockerfile, docker-compose.yml, Caddyfile, docker/    publicación con HTTPS automático
+scripts/          backup.sh y utilidades manuales
+docs/             ONLINE.md (publicar) y MAILS.md (mails y recordatorios)
+tests/            pytest
+```

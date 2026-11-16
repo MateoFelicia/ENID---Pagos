@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Falta actualizar la base de datos | ENID</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+               font-family: Arial, Helvetica, sans-serif; color: #fff; background: #0a0a0a; padding: 1.5rem; }
+        main { max-width: 640px; }
+        h1 { font: 2.2rem/1.1 Impact, 'Arial Black', sans-serif; color: #d90429; margin: 0 0 1rem; }
+        p { color: #ccc; line-height: 1.6; }
+        code { display: block; margin: .4rem 0; padding: .6rem .9rem; background: #1b1b1b; border-left: 4px solid #d90429; color: #fff; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>FALTA ACTUALIZAR LA BASE DE DATOS</h1>
+        <p>La web está instalada, pero la base de datos todavía no tiene las tablas de esta versión.
+            Quien administra el sitio tiene que correr, en la carpeta del proyecto:</p>
+        <code>python -m flask db upgrade</code>
+        <p>Si ese comando muestra el error <strong>«Multiple head revisions»</strong>, hay un archivo de migración de más en
+            <strong>migrations/versions</strong>: corré <code>python -m flask db heads</code> para ver cuáles son.</p>
+        <p>El detalle exacto está en la consola donde corre el servidor. Después de actualizar, recargá esta página.</p>
+    </main>
+</body>
+</html>

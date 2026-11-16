@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Clases de {{ curso.nombre }} | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+            <h1 class="display-6 fw-bold mb-2">Clases de {{ curso.nombre }}</h1>
+            <p class="text-secondary mb-0">
+                Cada clase puede ser en vivo (fecha + link de Meet), grabada (link al video) o las dos cosas:
+                cuando termina una clase en vivo, editala y pegá el link de la grabación.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('administrar_cursos') }}" class="btn btn-outline-secondary">Volver a cursos</a>
+            <a href="{{ url_for('nueva_clase', curso_id=curso.id) }}" class="btn btn-danger">Agregar clase</a>
+        </div>
+    </div>
+
+    <div class="table-responsive bg-white rounded-4 shadow-sm p-3">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Clase</th>
+                    <th>Estado</th>
+                    <th>Fecha (Argentina)</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clase in curso.clases %}
+                {% set estado = clase.estado(ahora) %}
+                <tr>
+                    <td>{{ clase.orden }}</td>
+                    <td>
+                        <strong>{{ clase.titulo }}</strong>
+                        {% if not clase.publicada %}<span class="badge text-bg-light border text-dark ms-1">Borrador</span>{% endif %}
+                        {% if clase.descripcion %}<div class="small text-secondary">{{ clase.descripcion }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {% if estado == 'grabada' %}<span class="badge text-bg-secondary">Grabada</span>
+                        {% elif estado == 'en_curso' %}<span class="badge text-bg-danger">En vivo ahora</span>
+                        {% elif estado == 'proxima' %}<span class="badge text-bg-warning">En vivo (próxima)</span>
+                        {% elif estado == 'esperando_grabacion' %}<span class="badge text-bg-info">Falta subir la grabación</span>
+                        {% else %}<span class="badge text-bg-light border text-dark">Sin contenido</span>{% endif %}
+                    </td>
+                    <td>{% if clase.fecha %}{{ clase.fecha.strftime('%d/%m/%Y %H:%M') }}{% else %}<span class="text-secondary">—</span>{% endif %}</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2">
+                            <a href="{{ url_for('editar_clase', clase_id=clase.id) }}" class="btn btn-sm btn-outline-dark">Editar</a>
+                            <form method="POST" action="{{ url_for('eliminar_clase', clase_id=clase.id) }}"
+                                onsubmit="return confirm('¿Eliminar esta clase? No se puede deshacer.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-secondary py-4">
+                        Este curso todavía no tiene clases. Agregá la primera.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

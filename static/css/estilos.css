@@ -9,12 +9,53 @@ body {
     color: var(--negro);
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.contenido-principal {
+    flex: 1 0 auto;
+}
+
 .navbar-escuela {
+    position: relative;
+    z-index: 10;
+    padding: 0.85rem 0;
+    background: var(--negro);
+    border-bottom: 3px solid var(--rojo);
+}
+
+.con-portada .navbar-escuela {
     position: absolute;
     inset: 0 0 auto;
-    z-index: 10;
     padding: 1.25rem 0;
+    border-bottom: 0;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent);
+}
+
+@media (max-width: 991.98px) {
+    .navbar-escuela .navbar-collapse {
+        margin-top: 0.75rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: rgba(10, 10, 10, 0.96);
+    }
+}
+
+.saltar-contenido {
+    position: absolute;
+    left: -999px;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+    color: white;
+    background: var(--rojo);
+}
+
+.saltar-contenido:focus {
+    left: 0.5rem;
+    top: 0.5rem;
 }
 
 .navbar-brand {
@@ -199,6 +240,8 @@ body {
 }
 
 .tarjeta-pago {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     padding: 2rem;
     border-top: 5px solid var(--rojo);
@@ -231,4 +274,309 @@ body {
     color: #777;
     font-size: 0.8rem;
     text-align: center;
+}
+
+/* ---------- Secciones nuevas de la portada ---------- */
+
+.seccion-gris {
+    background: var(--gris-claro);
+}
+
+.paso-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    color: white;
+    background: var(--rojo);
+    font-family: "Anton", sans-serif;
+    font-size: 1.5rem;
+}
+
+.paso h3 {
+    font-family: "Anton", sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.025em;
+}
+
+.entrenador-foto {
+    position: relative;
+    max-width: 440px;
+    margin-inline: auto;
+}
+
+.entrenador-foto::before {
+    content: "";
+    position: absolute;
+    inset: 1.25rem -1.25rem -1.25rem 1.25rem;
+    border: 4px solid var(--rojo);
+    z-index: 0;
+}
+
+.entrenador-foto img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    background: #ddd;
+}
+
+.entrenador-texto {
+    white-space: pre-line;
+    color: #444;
+    line-height: 1.8;
+}
+
+.tarjeta-testimonio {
+    height: 100%;
+    padding: 2rem;
+    border: 1px solid #e8e8e8;
+    border-left: 5px solid var(--rojo);
+    background: white;
+}
+
+.tarjeta-testimonio blockquote {
+    margin: 0 0 1.5rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+.testimonio-autor {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.testimonio-foto,
+.testimonio-inicial {
+    flex: none;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+}
+
+.testimonio-foto {
+    object-fit: cover;
+}
+
+.testimonio-inicial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: var(--negro);
+    font-family: "Anton", sans-serif;
+    font-size: 1.3rem;
+}
+
+.galeria-item {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background: #111;
+    cursor: zoom-in;
+}
+
+.galeria-item img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 300ms ease, opacity 300ms ease;
+}
+
+.galeria-item:hover img,
+.galeria-item:focus-visible img {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.preguntas .accordion-button {
+    font-weight: 600;
+}
+
+.preguntas .accordion-button:not(.collapsed) {
+    color: var(--negro);
+    background: #fdecef;
+    box-shadow: none;
+}
+
+.preguntas .accordion-button:focus {
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 0.2rem rgba(217, 4, 41, 0.2);
+}
+
+.banda-final {
+    color: white;
+    background: var(--rojo);
+}
+
+.banda-final .btn-light {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+/* ---------- Pie de página ---------- */
+
+.pie-pagina {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.75);
+    background: var(--negro);
+    border-top: 4px solid var(--rojo);
+}
+
+.pie-marca {
+    margin-bottom: 0.75rem;
+    color: white;
+    font-family: "Anton", sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+}
+
+.pie-titulo {
+    margin-bottom: 0.9rem;
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.pie-texto {
+    max-width: 340px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.7;
+}
+
+.pie-lista {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pie-lista li {
+    margin-bottom: 0.55rem;
+}
+
+.pie-lista a {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+}
+
+.pie-lista a:hover,
+.pie-lista a:focus-visible {
+    color: white;
+    text-decoration: underline;
+}
+
+.pie-lista .boton-arrepentimiento {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--rojo);
+    border-radius: 0.25rem;
+    color: white;
+    font-weight: 600;
+}
+
+.pie-base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 1.25rem 0 1.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+}
+
+.boton-whatsapp {
+    position: fixed;
+    right: 1.1rem;
+    bottom: 1.1rem;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    color: white;
+    background: #25d366;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+    transition: transform 150ms ease;
+}
+
+.boton-whatsapp:hover {
+    color: white;
+    transform: scale(1.08);
+}
+
+/* ---------- Páginas internas ---------- */
+
+.pagina-error {
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.pagina-error .codigo {
+    font-family: "Anton", sans-serif;
+    font-size: clamp(5rem, 18vw, 9rem);
+    line-height: 1;
+    color: var(--rojo);
+}
+
+.texto-legal h2 {
+    margin-top: 2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.texto-legal p,
+.texto-legal li {
+    color: #333;
+    line-height: 1.75;
+}
+
+.borrador-legal {
+    border-left: 5px solid #f0ad00;
+}
+
+:focus-visible {
+    outline: 3px solid var(--rojo);
+    outline-offset: 2px;
+}
+
+.navbar-escuela .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar-escuela .nav-link:hover,
+.navbar-escuela .nav-link:focus-visible {
+    color: white;
+}
+
+.tarjeta-testimonio {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Evita el desborde horizontal en celulares (el marco rojo de la foto sobresale) */
+.seccion-gris {
+    overflow-x: clip;
+}
+
+@media (max-width: 575.98px) {
+    .entrenador-foto::before {
+        inset: 0.9rem -0.6rem -0.9rem 0.6rem;
+    }
 }

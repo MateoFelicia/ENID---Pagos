@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Bienvenido a ENID{% endblock %}
+{% block contenido %}
+{{ titulo("¡BIENVENIDO, " ~ (usuario.nombre.split()[0] | upper) ~ "!") }}
+<p>Tu cuenta de ENID ya está lista. Desde ahí vas a poder inscribirte a los cursos, entrar a las clases en vivo y ver las grabaciones cuando quieras.</p>
+<p>Elegí tu curso, pagá de forma segura con Mercado Pago y el acceso se habilita automáticamente.</p>
+{{ boton(url_cursos, "VER LOS CURSOS") }}
+<p style="color:#777777;font-size:14px;">Si vos no creaste esta cuenta, ignorá este mensaje.</p>
+{% endblock %}

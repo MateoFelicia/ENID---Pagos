@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Inscripción manual | ENID{% endblock %}
+{% block title %}Dar acceso a un alumno | ENID{% endblock %}
 
 {% block content %}
 <section class="container py-5">
@@ -8,45 +8,92 @@
         <div class="col-12 col-lg-8">
             <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
                 <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
-                <h1 class="h2 fw-bold mb-4">Alta manual de alumno</h1>
+                <h1 class="h2 fw-bold mb-3">Dar acceso a un alumno</h1>
                 <p class="text-secondary mb-4">
-                    Inscribí a un alumno directamente sin pasar por el checkout. 
-                    El acceso se concede automáticamente (origen: manual).
+                    Convertí en alumno a quien quieras, sin pasar por Mercado Pago: sirve para quien te pagó
+                    por PayPal o transferencia, para becas o para alumnos de antes de la web.
+                    Podés quitar el acceso cuando quieras desde <em>Alumnos</em>. Para cargar muchos de una vez,
+                    usá <a href="{{ url_for('gestion.importar_alumnos') }}">Importar alumnos (CSV)</a>.
                 </p>
 
                 <form method="POST" novalidate>
-                    {{ form.hidden_tag() if form else '' }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                    <div class="mb-3">
-                        <label class="form-label">Curso *</label>
-                        <select name="curso_id" class="form-select" required>
-                            <option value="">Seleccioná un curso</option>
-                            {% for curso in cursos %}
-                            <option value="{{ curso.id }}">{{ curso.nombre }} - ${{ "%.2f"|format(curso.precio) }} ARS</option>
-                            {% endfor %}
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="alumno_nombre">Nombre del alumno *</label>
+                            <input type="text" id="alumno_nombre" name="alumno_nombre" class="form-control" required
+                                maxlength="120" value="{{ prefill_nombre or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="email">Email *</label>
+                            <input type="email" id="email" name="email" class="form-control" required
+                                maxlength="120" value="{{ prefill_email or '' }}">
+                        </div>
+                    </div>
+                    <div class="form-text mb-4">
+                        Con este email el alumno inicia sesión. Si todavía no tiene cuenta, se crea una y se le envía
+                        (o te mostramos) un enlace para que elija su contraseña.
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Nombre del alumno *</label>
-                        <input type="text" name="alumno_nombre" class="form-control" required maxlength="120">
+                    <div class="mb-4">
+                        <label class="form-label d-block">Cursos *</label>
+                        {% for curso in cursos %}
+                        <div class="form-check">
+                            <input class="form-check-input curso-check" type="checkbox" name="curso_ids"
+                                value="{{ curso.id }}" id="curso-{{ curso.id }}">
+                            <label class="form-check-label" for="curso-{{ curso.id }}">
+                                {{ curso.nombre }} <span class="text-secondary">· ${{ curso.precio | ars }} ARS</span>
+                            </label>
+                        </div>
+                        {% else %}
+                        <p class="text-secondary">No hay cursos activos todavía.</p>
+                        {% endfor %}
+
+                        {% if cursos %}
+                        <hr>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="todos_los_cursos" value="1" id="todos">
+                            <label class="form-check-label fw-bold" for="todos">Todos los cursos activos</label>
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Email (opcional)</label>
-                        <input type="email" name="email" class="form-control" maxlength="120" placeholder="Si existe, se asocia a la cuenta; si no, se crea una">
-                        <div class="form-text">
-                            Si el email no existe, se crea un usuario con contraseña temporal "changeme123".
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label" for="medio">¿Cómo pagó?</label>
+                            <select class="form-select" id="medio" name="medio">
+                                {% for clave, nombre in medios %}
+                                {% if clave != 'importado' %}<option value="{{ clave }}">{{ nombre }}</option>{% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-7 mb-4">
+                            <label class="form-label" for="nota">Nota (opcional)</label>
+                            <input type="text" id="nota" name="nota" class="form-control" maxlength="200"
+                                placeholder="Ej.: PayPal del 12/10, USD 25">
                         </div>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-danger">Crear inscripción</button>
-                        <a href="{{ url_for('administrar_inscripciones') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Dar acceso</button>
+                        <a href="{{ url_for('administrar_usuarios') }}" class="btn btn-outline-secondary">Cancelar</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    // "Todos los cursos" marca y bloquea las casillas individuales
+    (function () {
+        var todos = document.getElementById("todos");
+        if (!todos) return;
+        var checks = document.querySelectorAll(".curso-check");
+        todos.addEventListener("change", function () {
+            checks.forEach(function (c) { c.checked = todos.checked; c.disabled = todos.checked; });
+        });
+    })();
+</script>
 {% endblock %}

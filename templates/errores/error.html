@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} | ENID{% endblock %}
+{% block content %}
+<section class="container pagina-error">
+    <p class="codigo">{{ codigo }}</p>
+    <h1 class="h3 fw-bold">{{ titulo }}</h1>
+    <p class="text-secondary">{{ mensaje }}</p>
+    <a class="btn btn-danger mt-2" href="{{ url_for('inicio') }}">Volver al inicio</a>
+</section>
+{% endblock %}

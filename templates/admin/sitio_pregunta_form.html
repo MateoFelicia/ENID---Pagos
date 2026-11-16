@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block title %}{{ titulo }} | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-7">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5">
+            <h1 class="h3 fw-bold mb-4">{{ titulo }}</h1>
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                {{ campo(form.pregunta) }}
+                {{ campo(form.respuesta, rows="5") }}
+                {{ campo(form.orden) }}
+                {{ campo(form.visible) }}
+                <div class="d-flex gap-2">
+                    {{ form.enviar(class="btn btn-danger") }}
+                    <a class="btn btn-outline-secondary" href="{{ url_for('sitio.admin_preguntas') }}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

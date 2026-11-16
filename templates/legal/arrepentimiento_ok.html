@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Solicitud recibida | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-7">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5 text-center">
+            <p class="seccion-etiqueta">SOLICITUD RECIBIDA</p>
+            <h1 class="titulo-seccion mx-auto mb-3">RECIBIMOS TU PEDIDO.</h1>
+            <p class="text-secondary">Guardá este código por cualquier consulta:</p>
+            <p class="display-5 fw-bold text-danger" style="letter-spacing:.15em;">{{ solicitud.codigo }}</p>
+            <p class="text-secondary mb-4">
+                Te respondemos a <strong>{{ solicitud.email }}</strong> para coordinar la devolución del importe.
+            </p>
+            <a class="btn btn-danger" href="{{ url_for('inicio') }}">Volver al inicio</a>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

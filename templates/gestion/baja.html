@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Darme de baja de los avisos | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-6">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5 text-center">
+            <h1 class="h3 fw-bold mb-3">¿Dejar de recibir avisos de clases?</h1>
+            <p class="text-secondary">Dejaremos de enviar recordatorios y avisos de clases a <strong>{{ usuario.email }}</strong>.
+                Seguirás recibiendo los mails de tus pagos y de tu cuenta.</p>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger" type="submit">Sí, darme de baja</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('inicio') }}">Cancelar</a>
+            </form>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

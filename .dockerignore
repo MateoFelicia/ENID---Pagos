@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+!.env.produccion.example
+instance/
+*.db
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+backups/
+tests/
+docs/

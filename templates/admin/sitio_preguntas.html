@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Preguntas frecuentes | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-4">Contenido del sitio</h1>
+    {% include "admin/_menu_sitio.html" %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <p class="text-secondary mb-0">
+            {% if preguntas %}Estas son tus preguntas: la portada muestra solo estas.
+            {% else %}Ahora la portada muestra {{ base | length }} preguntas de ejemplo.{% endif %}
+        </p>
+        <div class="d-flex gap-2">
+            {% if not preguntas %}
+            <form method="POST" action="{{ url_for('sitio.cargar_preguntas_base') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-outline-dark" type="submit">Editar las de ejemplo</button>
+            </form>
+            {% endif %}
+            <a class="btn btn-danger" href="{{ url_for('sitio.nueva_pregunta') }}">Agregar pregunta</a>
+        </div>
+    </div>
+
+    {% for p in preguntas %}
+    <div class="bg-white rounded-4 shadow-sm p-3 mb-3 {{ '' if p.visible else 'opacity-50' }}">
+        <strong>{{ p.pregunta }}</strong>
+        {% if not p.visible %}<span class="badge text-bg-secondary ms-1">oculta</span>{% endif %}
+        <p class="small text-secondary mb-2 mt-1">{{ p.respuesta | truncate(220) }}</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-dark" href="{{ url_for('sitio.editar_pregunta', pregunta_id=p.id) }}">Editar</a>
+            <form method="POST" action="{{ url_for('sitio.eliminar_pregunta', pregunta_id=p.id) }}"
+                onsubmit="return confirm('¿Eliminar esta pregunta?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    {% for pregunta, respuesta in base %}
+    <div class="bg-white rounded-4 shadow-sm p-3 mb-3 opacity-75">
+        <strong>{{ pregunta }}</strong>
+        <p class="small text-secondary mb-0 mt-1">{{ respuesta | truncate(220) }}</p>
+    </div>
+    {% endfor %}
+    {% endfor %}
+</section>
+{% endblock %}

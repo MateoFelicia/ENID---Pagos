@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Testimonios | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-4">Contenido del sitio</h1>
+    {% include "admin/_menu_sitio.html" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-secondary mb-0">Lo que dicen los alumnos. Se muestran en la portada.</p>
+        <a class="btn btn-danger" href="{{ url_for('sitio.nuevo_testimonio') }}">Agregar testimonio</a>
+    </div>
+
+    <div class="row g-3">
+        {% for t in testimonios %}
+        <div class="col-md-6">
+            <div class="bg-white rounded-4 shadow-sm p-3 d-flex gap-3 {{ '' if t.visible else 'opacity-50' }}">
+                {% if t.imagen_id %}
+                <img src="{{ url_for('sitio.media', imagen_id=t.imagen_id) }}" alt="" width="64" height="64"
+                    class="rounded-circle flex-none" style="object-fit:cover" loading="lazy">
+                {% else %}
+                <span class="testimonio-inicial">{{ t.nombre[:1] | upper }}</span>
+                {% endif %}
+                <div class="flex-grow-1">
+                    <strong>{{ t.nombre }}</strong>
+                    <span class="text-secondary small">{{ t.detalle or '' }}</span>
+                    {% if not t.visible %}<span class="badge text-bg-secondary ms-1">oculto</span>{% endif %}
+                    <p class="small mb-2 mt-1">{{ t.texto | truncate(160) }}</p>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-sm btn-outline-dark" href="{{ url_for('sitio.editar_testimonio', testimonio_id=t.id) }}">Editar</a>
+                        <form method="POST" action="{{ url_for('sitio.eliminar_testimonio', testimonio_id=t.id) }}"
+                            onsubmit="return confirm('¿Eliminar este testimonio?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-secondary">Todavía no cargaste testimonios. Mientras no haya ninguno, la sección no aparece en la portada.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

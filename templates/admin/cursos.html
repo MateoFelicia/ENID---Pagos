@@ -34,7 +34,7 @@
                         <div class="small text-secondary">{{ curso.descripcion }}</div>
                         {% endif %}
                     </td>
-                    <td>${{ "%.2f"|format(curso.precio) }} ARS</td>
+                    <td>${{ curso.precio | ars }} ARS</td>
                     <td>
                         {% if curso.activo %}
                         <span class="badge text-bg-success">Activo</span>
@@ -44,6 +44,10 @@
                     </td>
                     <td class="text-end">
                         <div class="d-inline-flex gap-2">
+                            <a href="{{ url_for('administrar_clases', curso_id=curso.id) }}"
+                                class="btn btn-sm btn-dark">
+                                Clases ({{ curso.clases | length }})
+                            </a>
                             <a href="{{ url_for('editar_curso', curso_id=curso.id) }}"
                                 class="btn btn-sm btn-outline-dark">
                                 Editar

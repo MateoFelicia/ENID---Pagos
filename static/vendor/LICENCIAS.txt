@@ -1,0 +1,4 @@
+Bootstrap 5.3.8 — MIT License — https://github.com/twbs/bootstrap
+Anton (Vernon Adams) — SIL Open Font License 1.1 — vía @fontsource/anton
+Inter (Rasmus Andersson) — SIL Open Font License 1.1 — vía @fontsource/inter
+Se sirven desde este mismo sitio para no depender de CDN de terceros.

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Fotos | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-4">Contenido del sitio</h1>
+    {% include "admin/_menu_sitio.html" %}
+
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+        <h2 class="h5 fw-bold">Subir fotos</h2>
+        <p class="text-secondary small">Podés elegir varias a la vez (JPG, PNG, WEBP o GIF, hasta 10 MB cada una).
+            Se achican y optimizan solas. Hay {{ fotos | length }} de {{ maximo }} posibles.</p>
+        <form method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-md-row gap-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input class="form-control" type="file" name="fotos" accept="image/*" multiple required>
+            <button class="btn btn-danger text-nowrap" type="submit">Subir</button>
+        </form>
+    </div>
+
+    <div class="row g-3">
+        {% for foto in fotos %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm {{ '' if foto.visible else 'opacity-50' }}">
+                <img src="{{ url_for('sitio.media', imagen_id=foto.imagen_id) }}" class="card-img-top"
+                    alt="{{ foto.pie or 'Foto' }}" style="aspect-ratio:4/3;object-fit:cover" loading="lazy">
+                <div class="card-body p-2 small">
+                    <div class="text-truncate">{{ foto.pie or 'Sin pie de foto' }}</div>
+                    <div class="text-secondary">Orden {{ foto.orden }}{% if not foto.visible %} · oculta{% endif %}</div>
+                </div>
+                <div class="card-footer d-flex gap-2 p-2 bg-white">
+                    <a class="btn btn-sm btn-outline-dark flex-fill" href="{{ url_for('sitio.editar_foto', foto_id=foto.id) }}">Editar</a>
+                    <form method="POST" action="{{ url_for('sitio.eliminar_foto', foto_id=foto.id) }}"
+                        onsubmit="return confirm('¿Eliminar esta foto?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-secondary">Todavía no hay fotos. Cuando subas la primera, aparece la galería en la portada.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

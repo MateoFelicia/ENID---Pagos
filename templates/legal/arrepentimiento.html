@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block title %}Botón de arrepentimiento | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-7">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5">
+            <p class="seccion-etiqueta">DEFENSA DEL CONSUMIDOR</p>
+            <h1 class="titulo-seccion mb-3">BOTÓN DE ARREPENTIMIENTO</h1>
+            <p class="text-secondary">
+                Si te arrepentiste de tu compra, podés pedir la revocación dentro de los <strong>10 días corridos</strong>
+                desde que la hiciste. No necesitás iniciar sesión: completá el formulario y te respondemos por mail
+                para devolverte el importe por el mismo medio de pago.
+            </p>
+
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                {{ campo(form.nombre) }}
+                {{ campo(form.email) }}
+                {{ campo(form.referencia, placeholder="Ej.: Curso Pro, o inscripción N.º 12") }}
+                {{ campo(form.motivo, rows="3") }}
+                {{ form.enviar(class="btn btn-danger btn-lg w-100") }}
+            </form>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

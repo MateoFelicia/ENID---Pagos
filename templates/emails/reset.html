@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Restablecer contraseña{% endblock %}
+{% block contenido %}
+{{ titulo("RESTABLECER CONTRASEÑA") }}
+<p>Hola {{ usuario.nombre }}, pediste cambiar tu contraseña de ENID. Hacé clic en el botón para elegir una nueva:</p>
+{{ boton(enlace, "ELEGIR NUEVA CONTRASEÑA") }}
+<p style="color:#777777;font-size:14px;">El enlace vence en 1 hora. Si no lo pediste vos, ignorá este mensaje: tu contraseña actual sigue siendo la misma.</p>
+<p style="color:#777777;font-size:13px;word-break:break-all;">Si el botón no funciona, copiá este enlace en el navegador:<br>{{ enlace }}</p>
+{% endblock %}

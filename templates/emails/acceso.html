@@ -1,0 +1,19 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Ya tenés acceso{% endblock %}
+{% block contenido %}
+{{ titulo("YA TENÉS ACCESO") }}
+<p>Hola {{ usuario.nombre }}, te dimos acceso a:</p>
+<ul style="padding-left:20px;">
+    {% for curso in cursos %}<li><strong>{{ curso.nombre }}</strong></li>{% endfor %}
+</ul>
+{% if invitacion_url %}
+<p>Para entrar, primero creá tu contraseña:</p>
+{{ boton(invitacion_url, "CREAR MI CONTRASEÑA") }}
+<p style="color:#777777;font-size:14px;">El enlace vence en 7 días. Después vas a iniciar sesión con este mismo email ({{ usuario.email }}).</p>
+<p style="color:#777777;font-size:13px;word-break:break-all;">Si el botón no funciona, copiá este enlace en el navegador:<br>{{ invitacion_url }}</p>
+{% else %}
+<p>Iniciá sesión con tu email ({{ usuario.email }}) y encontrá tus cursos en “Mis inscripciones”.</p>
+{{ boton(url_mis_cursos, "IR A MIS CURSOS") }}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}{% if tipo == 'grabacion' %}Ya está la grabación{% else %}Nueva clase{% endif %}{% endblock %}
+{% block contenido %}
+{% if tipo == 'grabacion' %}
+{{ titulo("YA ESTÁ LA GRABACIÓN") }}
+<p>Hola {{ usuario.nombre }}, ya podés ver la grabación de una clase de <strong>{{ curso.nombre }}</strong>:</p>
+{% else %}
+{{ titulo("NUEVA CLASE DISPONIBLE") }}
+<p>Hola {{ usuario.nombre }}, sumamos una clase nueva a <strong>{{ curso.nombre }}</strong>:</p>
+{% endif %}
+<p style="margin:16px 0;padding:14px 16px;background:#f4f4f4;border-left:4px solid #d90429;">
+    <strong style="font-size:18px;">{{ clase.titulo }}</strong>
+    {% if clase.fecha and tipo != 'grabacion' %}<br>{{ clase.fecha | fecha_ar }}{% endif %}
+    {% if clase.descripcion %}<br><span style="color:#555555;">{{ clase.descripcion }}</span>{% endif %}
+</p>
+{{ boton(url_curso, "VER EL CURSO") }}
+{% endblock %}
