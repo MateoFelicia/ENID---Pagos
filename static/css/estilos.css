@@ -753,3 +753,107 @@ body {
 .galeria-iconos .icono {
     color: var(--rojo);
 }
+
+/* ---------- Noticias y newsletter ---------- */
+
+.caja-newsletter {
+    padding: 1.25rem 1.5rem;
+    border-left: 4px solid var(--rojo);
+    border-radius: 0.5rem;
+    background: var(--gris-claro);
+}
+
+.form-newsletter .form-control {
+    min-width: 0;
+}
+
+.form-newsletter-nota {
+    margin: 0.5rem 0 0;
+    color: #777;
+    font-size: 0.78rem;
+}
+
+.form-newsletter-oscuro .form-control {
+    border-color: #333;
+    color: white;
+    background: #1a1a1a;
+}
+
+.form-newsletter-oscuro .form-control::placeholder {
+    color: #888;
+}
+
+.form-newsletter-oscuro .form-newsletter-nota {
+    color: #888;
+}
+
+/* Campo que solo completan los robots */
+.campo-trampa {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.tarjeta-noticia {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid #e8e8e8;
+    border-radius: 0.5rem;
+    background: white;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.tarjeta-noticia:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+}
+
+.tarjeta-noticia img,
+.tarjeta-noticia-sin-foto {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.tarjeta-noticia-sin-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--rojo);
+    background: var(--gris-claro);
+}
+
+.tarjeta-noticia h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.tarjeta-noticia p {
+    color: #6b6b6b;
+}
+
+.tarjeta-noticia-fecha {
+    margin-bottom: 0.4rem;
+    color: var(--rojo) !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.noticia-imagen {
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+.noticia-cuerpo p {
+    font-size: 1.08rem;
+    line-height: 1.8;
+    white-space: pre-line;
+}

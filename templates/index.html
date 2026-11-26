@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_newsletter.html" import form_newsletter with context %}
 
 {% block title %}Cursos de fútbol | Escuela de fútbol{% endblock %}
 
@@ -325,6 +326,31 @@
         });
     </script>
     {% endif %}
+
+    <section class="py-5 borde-superior" id="novedades">
+        <div class="container py-lg-4">
+            <div class="row g-4 align-items-end mb-4">
+                <div class="col-lg-7">
+                    <p class="seccion-etiqueta">NOVEDADES</p>
+                    <h2 class="titulo-seccion">ENTERATE PRIMERO.</h2>
+                </div>
+                <div class="col-lg-5">
+                    <div class="caja-newsletter">
+                        <p class="fw-bold mb-2">{{ icono("noticias", 20) }} Cursos nuevos y clases en vivo, en tu mail</p>
+                        {{ form_newsletter(id="newsletter-portada") }}
+                    </div>
+                </div>
+            </div>
+            {% if ultimas_noticias %}
+            <div class="row g-4">
+                {% for noticia in ultimas_noticias %}
+                <div class="col-md-6 col-lg-4">{% include "noticias/_tarjeta.html" %}</div>
+                {% endfor %}
+            </div>
+            <a class="btn btn-outline-dark mt-4" href="{{ url_for('noticias.listado') }}">VER TODAS LAS NOTICIAS</a>
+            {% endif %}
+        </div>
+    </section>
 
     <section class="py-5 preguntas {{ 'seccion-gris' if not fotos and not testimonios else '' }}" id="preguntas">
         <div class="container py-lg-4">

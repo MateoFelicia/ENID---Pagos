@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}Confirmá tu suscripción{% endblock %}
+{% block contenido %}
+{{ titulo("CONFIRMÁ TU SUSCRIPCIÓN") }}
+<p>Alguien (seguramente vos) anotó este mail para recibir las novedades de ENID: cursos nuevos, fechas de clases en vivo y noticias.</p>
+<p>Para empezar a recibirlas, confirmá con este botón:</p>
+{{ boton(url_confirmar, "CONFIRMAR SUSCRIPCIÓN") }}
+<p style="color:#777777;font-size:14px;">Si no fuiste vos, ignorá este mail: sin confirmar no te vamos a escribir. El enlace vence en 7 días.</p>
+{% endblock %}

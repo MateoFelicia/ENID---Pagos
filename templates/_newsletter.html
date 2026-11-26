@@ -1,0 +1,19 @@
+{# Formulario de suscripción al newsletter. Uso: {% from "_newsletter.html" import form_newsletter %} #}
+{% macro form_newsletter(oscuro=False, id="newsletter") -%}
+<form method="POST" action="{{ url_for('noticias.suscribirse') }}" class="form-newsletter {{ 'form-newsletter-oscuro' if oscuro else '' }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="volver" value="{{ request.path }}">
+    <div class="campo-trampa" aria-hidden="true">
+        <label for="{{ id }}-web">No completar</label>
+        <input type="text" id="{{ id }}-web" name="sitio_web" tabindex="-1" autocomplete="off">
+    </div>
+    <label class="visually-hidden" for="{{ id }}-email">Tu email</label>
+    <div class="input-group">
+        <input type="email" class="form-control" id="{{ id }}-email" name="email" placeholder="tu@email.com"
+            autocomplete="email" required maxlength="120"
+            {% if current_user.is_authenticated %}value="{{ current_user.email }}"{% endif %}>
+        <button class="btn btn-danger" type="submit">Suscribirme</button>
+    </div>
+    <p class="form-newsletter-nota">Te mandamos un mail para confirmar. Te das de baja cuando quieras.</p>
+</form>
+{%- endmacro %}

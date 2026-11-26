@@ -38,6 +38,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 import aula
 import membresia
+import noticias
 import profes
 import gestion
 import iconos
@@ -156,6 +157,7 @@ app.register_blueprint(gestion.bp)
 app.register_blueprint(aula.bp)
 app.register_blueprint(profes.bp)
 app.register_blueprint(membresia.bp)
+app.register_blueprint(noticias.bp)
 
 # Íconos SVG en línea y la ficha corta de cada curso (módulos, clases, minutos), para las plantillas
 app.jinja_env.globals.update(icono=iconos.icono, iconos_temas=iconos.ICONOS_TEMAS, resumen_curso=resumen_curso)
@@ -825,7 +827,8 @@ def inicio():
             elif inscripcion.estado == "pendiente":
                 estados.setdefault(inscripcion.curso_id, "pendiente")
 
-    return render_template("index.html", cursos=cursos, estados=estados, **sitio.contenido_portada())
+    return render_template("index.html", cursos=cursos, estados=estados, ultimas_noticias=noticias.ultimas(),
+                           **sitio.contenido_portada())
 
 
 @app.route("/comprar/<int:curso_id>", methods=["GET", "POST"])
