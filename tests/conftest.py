@@ -15,6 +15,12 @@ os.environ.pop("MAIL_USERNAME", None)
 os.environ.pop("PUBLIC_URL", None)
 os.environ.pop("NGROK_URL", None)
 
+# app.py llama a load_dotenv(): sin esto, el .env de quien corre los tests vuelve a cargar
+# PUBLIC_URL, MAIL_USERNAME, etc. y los enlaces de los mails salen con su dominio.
+import dotenv  # noqa: E402
+
+dotenv.load_dotenv = lambda *args, **kwargs: False
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest  # noqa: E402

@@ -321,7 +321,8 @@ def revisar_configuracion():
         agregar("ok", f"PUBLIC_URL: {publica}")
     agregar("ok" if app.config.get("SESSION_COOKIE_SECURE") else "aviso",
             "Cookies de sesión marcadas como seguras." if app.config.get("SESSION_COOKIE_SECURE")
-            else "Las cookies de sesión no son 'secure' (se activan con PUBLIC_URL https).")
+            else "Las cookies de sesión no son 'secure': se activan solas cuando PUBLIC_URL es tu dominio con https "
+            "(con un túnel de pruebas como ngrok quedan apagadas a propósito).")
 
     if not mail_configurado():
         agregar("aviso", "Mails sin configurar (MAIL_USERNAME vacío): se imprimen en consola y no llegan a nadie.")
