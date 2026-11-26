@@ -44,6 +44,7 @@ docker compose exec web flask crear-admin        # tu usuario de dueño
 docker compose exec web flask probar-mail tu@correo.com
 docker compose exec web flask verificar-config   # tiene que dar 0 errores
 ```
+Lo mismo se ve desde la web en **Administración → ¿Lista para abrir?**, junto con lo que se revisa a mano.
 Después, desde la web: **Administración → Cursos y clases** (cargá los cursos reales) y **Contenido del sitio** (entrenador, fotos, testimonios, datos legales).
 
 ### 5. Mantenimiento
@@ -52,6 +53,7 @@ Después, desde la web: **Administración → Cursos y clases** (cargá los curs
 - **Restaurar:** `gunzip -c backups/enid-AAAAMMDD-HHMMSS.sql.gz | docker compose exec -T db psql -U enid enid` (sobre una base vacía). Probalo una vez antes de necesitarlo.
 - **Monitoreo:** registrá `https://tu-dominio/salud` en un servicio de monitoreo gratuito (UptimeRobot o similar): responde 200 si la web y la base andan.
 - **Logs:** `docker compose logs -f web`.
+- **Google:** registrá el dominio en Google Search Console y cargá `https://tu-dominio/sitemap.xml` (lista las páginas públicas y las noticias; también figura en `robots.txt`).
 
 ---
 

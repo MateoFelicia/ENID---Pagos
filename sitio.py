@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 
 from ajustes import ajustes_sitio, contacto_email, guardar_ajustes, whatsapp_digitos
 from db import db
-from emailer import enviar_arrepentimiento
+from emailer import enviar_arrepentimiento, url_externa
 from extensions import limiter
 from forms import ArrepentimientoForm, AjustesForm, FotoForm, PreguntaForm, TestimonioForm
 from iconos import temas_portada
@@ -540,5 +540,20 @@ def robots():
         "Disallow: /mi-cuenta\n"
         "Disallow: /webhooks/\n"
         "Disallow: /comprar/\n"
+        "Disallow: /newsletter/\n"
+        f"\nSitemap: {url_externa('sitio.sitemap')}\n"
     )
     return Response(texto, mimetype="text/plain")
+
+
+@bp.route("/sitemap.xml")
+def sitemap():
+    """Las páginas públicas, para que Google las encuentre (se informa en robots.txt)."""
+    paginas = [url_externa(e) for e in ("inicio", "profes.listado", "noticias.listado", "recursos.podcasts",
+                                         "recursos.biblioteca", "sitio.terminos", "sitio.privacidad")]
+    noticias = db.session.execute(
+        db.select(Noticia).where(Noticia.publicada.is_(True)).order_by(Noticia.publicada_en.desc())
+    ).scalars().all()
+    paginas += [url_externa("noticias.ver", noticia_id=n.id, slug=n.slug) for n in noticias]
+    xml = render_template("sitemap.xml", paginas=paginas)
+    return Response(xml, mimetype="application/xml")

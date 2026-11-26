@@ -948,3 +948,33 @@ body {
 .tarjeta-recurso .d-block {
     color: #6b6b6b;
 }
+
+/* ---------- Lanzamiento ---------- */
+
+.chequeo {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.chequeo:last-child {
+    border-bottom: 0;
+}
+
+.chequeo-marca {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.chequeo-ok .chequeo-marca { background: #198754; }
+.chequeo-aviso .chequeo-marca { color: #3d2e00; background: #ffc107; }
+.chequeo-error .chequeo-marca { background: var(--rojo); }

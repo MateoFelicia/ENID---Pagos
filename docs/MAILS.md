@@ -10,6 +10,8 @@
 | Recordatorio de clase en vivo | 24 h y 1 h antes | **Sí** |
 | Clase nueva / ya está la grabación | Cuando el dueño tilda «Avisar por mail» al guardar una clase | **Sí** |
 | Arrepentimiento | Constancia para quien lo pidió y aviso para el dueño | No |
+| Confirmar suscripción al newsletter | Cuando alguien se anota a las novedades (doble confirmación) | No hace falta: sin confirmar no recibe nada |
+| Noticia | Cuando el dueño toca «Mandar por mail» en Administración → Noticias (una sola vez por noticia) | **Sí** (enlace al pie, botón de baja) |
 
 La baja de avisos se hace desde **Mi cuenta** o con el enlace al pie de cada mail (sin iniciar sesión).
 
@@ -36,6 +38,18 @@ Servicios como Brevo, Resend, Mailgun o Amazon SES ofrecen SMTP: te dan servidor
 - **SPF** y **DKIM** (los da el servicio; son obligatorios en la práctica).
 - **DMARC** (recomendado): un registro TXT `_dmarc` con una política inicial `v=DMARC1; p=none; rua=mailto:tu@correo` y, cuando todo funcione, endurecerla.
 - Usá un remitente de tu dominio (`avisos@tudominio.com.ar`) en `MAIL_DEFAULT_SENDER`.
+
+### Mail de empresa (para recibir y responder)
+El envío automático (SMTP) y la casilla donde leés y contestás son dos cosas distintas:
+
+| Para qué | Opción recomendada | Costo |
+|---|---|---|
+| Casilla `contacto@tudominio.com.ar` para leer y responder | Zoho Mail (plan gratis para pocos usuarios) o Google Workspace | Gratis / pago mensual por usuario |
+| Mails automáticos de la web y newsletter | Brevo (plan gratis: 300 mails por día) u otro servicio SMTP | Gratis para empezar |
+
+Los dos se configuran con registros DNS del dominio (MX para recibir; SPF, DKIM y DMARC para enviar). Pegá en `CONTACT_EMAIL` la casilla de empresa: es el «responder a» de todos los mails.
+
+> El newsletter sale con la misma configuración SMTP. Con Gmail funciona para pocos suscriptores, pero tiene tope diario y más chances de ir a spam. La página **Administración → ¿Lista para abrir?** te avisa.
 
 ## Probar
 ```bash

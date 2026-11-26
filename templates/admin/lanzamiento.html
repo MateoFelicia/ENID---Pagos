@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Lanzamiento | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <h1 class="display-6 fw-bold mb-2">¿Está lista la web para abrir?</h1>
+    <p class="text-secondary mb-4">
+        {% if errores %}Hay <strong>{{ errores }} cosa{{ '' if errores == 1 else 's' }} para resolver</strong> antes de cobrar de verdad{% if avisos %} y {{ avisos }} para revisar{% endif %}.
+        {% elif avisos %}No hay nada que impida cobrar, pero hay {{ avisos }} cosa{{ '' if avisos == 1 else 's' }} para revisar.
+        {% else %}Todo en orden.{% endif %}
+        Se actualiza cada vez que abrís esta página.
+    </p>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="bg-white rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold mb-3">Revisión automática</h2>
+                <ul class="list-unstyled mb-0 lista-chequeo">
+                    {% for orden in ('error', 'aviso', 'ok') %}{% for nivel, texto in resultados if nivel == orden %}
+                    <li class="chequeo chequeo-{{ nivel }}">
+                        <span class="chequeo-marca" aria-hidden="true">{{ {'ok': '✔', 'aviso': '!', 'error': '✘'}[nivel] }}</span>
+                        <span><span class="visually-hidden">{{ {'ok': 'Bien', 'aviso': 'Revisar', 'error': 'Falta'}[nivel] }}: </span>{{ texto }}</span>
+                    </li>
+                    {% endfor %}{% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="bg-white rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold mb-3">Para revisar a mano</h2>
+                <ul class="small ps-3 mb-0 d-grid gap-2">
+                    <li>La web abre con <strong>https://</strong> y el candado está bien.</li>
+                    <li>Un <strong>abogado revisó</strong> los términos y la política de privacidad (los textos incluidos son un modelo).</li>
+                    <li>Hablaste con tu <strong>contador</strong> sobre facturación (ARCA) e impuestos de la venta de cursos.</li>
+                    <li>Hiciste una <strong>compra real</strong> con tu tarjeta: se acreditó, llegó el mail y apareció el curso. Después la reembolsaste y la web quitó el acceso sola.</li>
+                    <li>El mail de prueba (<code>flask probar-mail</code>) llegó a la bandeja de entrada, no a spam.</li>
+                    <li><strong>Backup</strong> diario programado y probaste restaurarlo una vez.</li>
+                    <li>Un monitor gratuito (por ejemplo UptimeRobot) revisa <code>/salud</code> cada 5 minutos.</li>
+                    <li>Borraste los usuarios, cursos e inscripciones de prueba.</li>
+                </ul>
+                <p class="small text-secondary mt-3 mb-0">La guía completa está en <code>docs/ONLINE.md</code>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
