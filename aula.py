@@ -7,7 +7,7 @@ from db import db
 from forms import ModuloForm, ParteForm
 from models import Clase, Curso, Modulo, Parte, ahora_argentina
 from progreso import armar_aula, avance_clase, marcar, video_embed, vistos
-from utils import admin_required, tiene_acceso_curso
+from utils import exigir_editor, puede_editar_curso, staff_required, tiene_acceso_curso
 
 bp = Blueprint("aula", __name__)
 
@@ -23,7 +23,7 @@ def _clase_visible(curso_id, clase_id):
     clase = db.session.get(Clase, clase_id)
     if curso is None or clase is None or clase.curso_id != curso.id:
         abort(404)
-    if not clase.publicada and not current_user.es_admin:
+    if not clase.publicada and not puede_editar_curso(current_user, curso):
         abort(404)
     return curso, clase
 
@@ -44,7 +44,7 @@ def ver_clase(curso_id, clase_id):
         parte = next((p for p in clase.partes if p.id == pedido), None) or clase.partes[0]
 
     hechos = vistos(current_user, curso)
-    clases = [c for c in curso.clases if c.publicada or current_user.es_admin]
+    clases = [c for c in curso.clases if c.publicada or puede_editar_curso(current_user, curso)]
     grupos, por_clase, total = armar_aula(curso, clases, hechos)
 
     # Anterior / siguiente siguiendo el orden en que se muestra el aula
@@ -92,14 +92,11 @@ def marcar_visto(curso_id, clase_id):
 # ---------------------------------------------------------------- admin: módulos
 
 def _curso_o_404(curso_id):
-    curso = db.session.get(Curso, curso_id)
-    if curso is None:
-        abort(404)
-    return curso
+    return exigir_editor(db.session.get(Curso, curso_id))
 
 
 @bp.route("/admin/cursos/<int:curso_id>/modulos/nuevo", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def nuevo_modulo(curso_id):
     curso = _curso_o_404(curso_id)
     form = ModuloForm()
@@ -117,9 +114,10 @@ def nuevo_modulo(curso_id):
 
 
 @bp.route("/admin/modulos/<int:modulo_id>/editar", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def editar_modulo(modulo_id):
     modulo = db.session.get(Modulo, modulo_id) or abort(404)
+    exigir_editor(modulo.curso)
     form = ModuloForm(obj=modulo)
     if form.validate_on_submit():
         _guardar_modulo(modulo, form)
@@ -130,9 +128,10 @@ def editar_modulo(modulo_id):
 
 
 @bp.route("/admin/modulos/<int:modulo_id>/eliminar", methods=["POST"])
-@admin_required
+@staff_required
 def eliminar_modulo(modulo_id):
     modulo = db.session.get(Modulo, modulo_id) or abort(404)
+    exigir_editor(modulo.curso)
     curso_id = modulo.curso_id
     for clase in list(modulo.clases):
         clase.modulo_id = None  # las clases no se borran: quedan sin módulo
@@ -152,16 +151,18 @@ def _guardar_modulo(modulo, form):
 # ---------------------------------------------------------------- admin: partes
 
 @bp.route("/admin/clases/<int:clase_id>/partes")
-@admin_required
+@staff_required
 def administrar_partes(clase_id):
     clase = db.session.get(Clase, clase_id) or abort(404)
+    exigir_editor(clase.curso)
     return render_template("admin/partes.html", clase=clase, curso=clase.curso)
 
 
 @bp.route("/admin/clases/<int:clase_id>/partes/nueva", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def nueva_parte(clase_id):
     clase = db.session.get(Clase, clase_id) or abort(404)
+    exigir_editor(clase.curso)
     form = ParteForm()
     siguiente = max((p.orden for p in clase.partes), default=0) + 1
     if request.method == "GET":
@@ -180,9 +181,10 @@ def nueva_parte(clase_id):
 
 
 @bp.route("/admin/partes/<int:parte_id>/editar", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def editar_parte(parte_id):
     parte = db.session.get(Parte, parte_id) or abort(404)
+    exigir_editor(parte.clase.curso)
     form = ParteForm(obj=parte)
     if form.validate_on_submit():
         _guardar_parte(parte, form)
@@ -193,9 +195,10 @@ def editar_parte(parte_id):
 
 
 @bp.route("/admin/partes/<int:parte_id>/eliminar", methods=["POST"])
-@admin_required
+@staff_required
 def eliminar_parte(parte_id):
     parte = db.session.get(Parte, parte_id) or abort(404)
+    exigir_editor(parte.clase.curso)
     clase_id = parte.clase_id
     db.session.delete(parte)
     db.session.commit()

@@ -19,6 +19,31 @@ def admin_required(view):
     return wrapped_view
 
 
+def staff_required(view):
+    """Dueño o profesor. Cada vista revisa además que el profe dicte ese curso (exigir_editor)."""
+    @wraps(view)
+    @login_required
+    def wrapped_view(*args, **kwargs):
+        if not (current_user.es_admin or current_user.es_profesor):
+            abort(403)
+        return view(*args, **kwargs)
+
+    return wrapped_view
+
+
+def puede_editar_curso(usuario, curso):
+    """El dueño edita todo; un profe, solo los cursos que dicta."""
+    return usuario.is_authenticated and (usuario.es_admin or usuario.dicta(curso))
+
+
+def exigir_editor(curso):
+    if curso is None:
+        abort(404)
+    if not puede_editar_curso(current_user, curso):
+        abort(403)
+    return curso
+
+
 def destino_seguro(por_defecto="inicio"):
     """Devuelve el parámetro ?next= solo si es una ruta interna (evita open redirect)."""
     destino = request.args.get("next") or request.form.get("next") or ""
@@ -39,6 +64,6 @@ def inscripcion_con_acceso(usuario, curso):
 
 
 def tiene_acceso_curso(usuario, curso):
-    if usuario.es_admin:
+    if usuario.es_admin or usuario.dicta(curso):
         return True
     return inscripcion_con_acceso(usuario, curso) is not None

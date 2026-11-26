@@ -145,6 +145,7 @@
                         <p class="seccion-etiqueta">INSCRIPCIÓN ENID</p>
                         <h3>{{ curso.nombre }}</h3>
                         <p>{{ curso.descripcion or "Formación futbolística ENID." }}</p>
+                        {% if curso.profesores %}<p class="small mb-2"><strong>Con</strong> {{ curso.profesores | map(attribute='nombre') | join(', ') }}</p>{% endif %}
                         {% set n_clases = curso.clases | selectattr('publicada') | list | length %}
                         {% if n_clases %}
                         <p class="mb-2"><strong>{{ n_clases }} clase{{ '' if n_clases == 1 else 's' }}</strong>, en vivo y grabadas</p>

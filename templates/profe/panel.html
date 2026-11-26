@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Panel del profe | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Panel del profe</p>
+            <h1 class="display-6 fw-bold mb-2">Hola, {{ current_user.nombre.split()[0] }}</h1>
+            <p class="text-secondary mb-0">Desde acá cargás los módulos, las clases y los videos de tus cursos.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('profes.mi_perfil') }}" class="btn btn-outline-dark">Editar mi perfil</a>
+            <a href="{{ url_for('profes.listado') }}" class="btn btn-outline-secondary">Ver página de profes</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for curso in cursos %}
+        <div class="col-12 col-md-6">
+            <div class="bg-white text-dark rounded-4 shadow-sm p-4 h-100">
+                <h2 class="h5 fw-bold mb-1">{{ curso.nombre }}</h2>
+                <p class="small text-secondary mb-3">
+                    {{ curso.modulos | length }} módulos · {{ curso.clases | length }} clases
+                    {% if not curso.activo %} · <span class="badge text-bg-light border text-dark">No disponible a la venta</span>{% endif %}
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('administrar_clases', curso_id=curso.id) }}" class="btn btn-danger btn-sm">Gestionar clases</a>
+                    <a href="{{ url_for('ver_curso', curso_id=curso.id) }}" class="btn btn-outline-dark btn-sm">Ver como alumno</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="bg-white text-dark rounded-4 shadow-sm p-4 text-secondary">
+                Todavía no tenés cursos asignados. El dueño de ENID te los asigna desde su panel.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

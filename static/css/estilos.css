@@ -617,3 +617,16 @@ body {
     background: #198754;
     color: #fff;
 }
+
+/* ---------------------------------------------------------------- Profesores */
+.foto-profe {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.foto-profe-vacia {
+    background: var(--negro);
+    color: var(--rojo);
+    font-family: "Anton", sans-serif;
+    font-size: 4rem;
+}

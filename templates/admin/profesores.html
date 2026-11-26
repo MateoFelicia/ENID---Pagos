@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+
+{% block title %}Profesores | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+        <div>
+            <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+            <h1 class="display-6 fw-bold mb-2">Profesores</h1>
+            <p class="text-secondary mb-0">
+                Un profe carga módulos, clases y videos solo en los cursos que le asignás, y entra a ellos sin pagar.
+                No ve pagos, alumnos ni el resto del panel.
+            </p>
+        </div>
+        <a href="{{ url_for('profes.listado') }}" class="btn btn-outline-dark">Ver página pública</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <div class="table-responsive bg-white rounded-4 shadow-sm p-3">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Profe</th><th>Cursos</th><th class="text-end">Acciones</th></tr></thead>
+                    <tbody>
+                        {% for profe in profes %}
+                        <tr>
+                            <td>
+                                <strong>{{ profe.nombre }}</strong>
+                                <div class="small text-secondary">{{ profe.email }}</div>
+                                {% if profe.titulo_profesional %}<div class="small">{{ profe.titulo_profesional }}</div>{% endif %}
+                            </td>
+                            <td class="small">
+                                {% for curso in profe.cursos_dictados %}{{ curso.nombre }}{% if not loop.last %}, {% endif %}
+                                {% else %}<span class="text-secondary">Sin cursos asignados</span>{% endfor %}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a href="{{ url_for('profes.editar', usuario_id=profe.id) }}" class="btn btn-sm btn-outline-dark">Editar</a>
+                                    <form method="POST" action="{{ url_for('profes.quitar', usuario_id=profe.id) }}"
+                                        onsubmit="return confirm('¿Quitarle el rol de profe? Su cuenta sigue activa.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Quitar rol</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-secondary py-4">Todavía no hay profes. Agregá el primero.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="bg-white text-dark rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold mb-3">Agregar profe</h2>
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    {{ campo(form.nombre) }}
+                    {{ campo(form.email) }}
+                    <p class="small text-secondary">Si no tiene cuenta, se la creamos y te damos un enlace para que elija su contraseña.</p>
+                    {{ form.enviar(class="btn btn-danger w-100") }}
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

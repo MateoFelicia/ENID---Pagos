@@ -37,6 +37,7 @@ from sqlalchemy.orm import selectinload
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import aula
+import profes
 import gestion
 import sitio
 from avisos import avisar
@@ -69,6 +70,9 @@ from progreso import armar_aula, vistos
 from utils import (
     admin_required,
     destino_seguro,
+    exigir_editor,
+    puede_editar_curso,
+    staff_required,
     inscripcion_con_acceso,
     tiene_acceso_curso,
 )
@@ -148,6 +152,7 @@ login_manager.login_message_category = "warning"
 app.register_blueprint(sitio.bp)
 app.register_blueprint(gestion.bp)
 app.register_blueprint(aula.bp)
+app.register_blueprint(profes.bp)
 
 @app.template_filter("fecha_ar")
 def fecha_ar(fecha):
@@ -607,20 +612,16 @@ def _avisar_a_alumnos(clase, tipo):
 
 
 @app.route("/admin/cursos/<int:curso_id>/clases")
-@admin_required
+@staff_required
 def administrar_clases(curso_id):
-    curso = db.session.get(Curso, curso_id)
-    if curso is None:
-        abort(404)
+    curso = exigir_editor(db.session.get(Curso, curso_id))
     return render_template("admin/clases.html", curso=curso, ahora=ahora_argentina())
 
 
 @app.route("/admin/cursos/<int:curso_id>/clases/nueva", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def nueva_clase(curso_id):
-    curso = db.session.get(Curso, curso_id)
-    if curso is None:
-        abort(404)
+    curso = exigir_editor(db.session.get(Curso, curso_id))
 
     form = ClaseForm()
     _opciones_modulo(form, curso)
@@ -644,11 +645,12 @@ def nueva_clase(curso_id):
 
 
 @app.route("/admin/clases/<int:clase_id>/editar", methods=["GET", "POST"])
-@admin_required
+@staff_required
 def editar_clase(clase_id):
     clase = db.session.get(Clase, clase_id)
     if clase is None:
         abort(404)
+    exigir_editor(clase.curso)
 
     form = ClaseForm(obj=clase)
     _opciones_modulo(form, clase.curso)
@@ -671,11 +673,12 @@ def editar_clase(clase_id):
 
 
 @app.route("/admin/clases/<int:clase_id>/eliminar", methods=["POST"])
-@admin_required
+@staff_required
 def eliminar_clase(clase_id):
     clase = db.session.get(Clase, clase_id)
     if clase is None:
         abort(404)
+    exigir_editor(clase.curso)
     curso_id = clase.curso_id
     db.session.delete(clase)
     db.session.commit()
@@ -778,7 +781,8 @@ def ver_curso(curso_id):
 
     ahora = ahora_argentina()
     # Los alumnos solo ven las clases publicadas; el admin también ve los borradores
-    clases = [c for c in curso.clases if c.publicada or current_user.es_admin]
+    editor = puede_editar_curso(current_user, curso)
+    clases = [c for c in curso.clases if c.publicada or editor]
     proxima = min(
         (c for c in clases if c.fecha and c.estado(ahora) in ("proxima", "en_curso")),
         key=lambda c: c.fecha,
@@ -790,7 +794,7 @@ def ver_curso(curso_id):
     continuar = next((c for g in grupos for c in g.clases if not por_clase[c.id].completo), None)
     return render_template(
         "curso_detalle.html", curso=curso, clases=clases, proxima=proxima, ahora=ahora,
-        grupos=grupos, por_clase=por_clase, total=total, continuar=continuar,
+        grupos=grupos, por_clase=por_clase, total=total, continuar=continuar, editor=editor,
     )
 
 

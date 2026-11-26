@@ -21,11 +21,16 @@
                 {% if curso.descripcion %}
                 <p class="text-secondary mb-3">{{ curso.descripcion }}</p>
                 {% endif %}
+                {% if curso.profesores %}
+                <p class="small mb-3"><strong>Dictado por:</strong>
+                    {% for profe in curso.profesores %}{{ profe.nombre }}{% if profe.titulo_profesional %} <span class="text-secondary">({{ profe.titulo_profesional }})</span>{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}
+                </p>
+                {% endif %}
                 <p class="mb-3">
                     {% if curso.modulos %}<span class="badge text-bg-dark">{{ grupos | selectattr('modulo') | list | length }} módulos</span>{% endif %}
                     <span class="badge text-bg-dark">{{ clases | length }} clase{{ '' if clases | length == 1 else 's' }}</span>
                     {% if grabadas %}<span class="badge text-bg-secondary">{{ grabadas }} grabada{{ '' if grabadas == 1 else 's' }}</span>{% endif %}
-                    {% if current_user.es_admin %}
+                    {% if editor %}
                     <a class="btn btn-sm btn-outline-dark ms-2" href="{{ url_for('administrar_clases', curso_id=curso.id) }}">Gestionar clases</a>
                     {% endif %}
                 </p>
