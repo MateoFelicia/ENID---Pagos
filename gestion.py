@@ -261,9 +261,10 @@ def _estado_migraciones():
     return actual, cabeza
 
 
-@bp.cli.command("verificar-config")
-def cmd_verificar_config():
-    """Revisa que la configuración esté lista para recibir pagos reales."""
+def revisar_configuracion():
+    """Lista de (nivel, texto) con lo que falta para recibir pagos reales. nivel: ok | aviso | error.
+
+    La usan `flask verificar-config` y la página Administración → Lanzamiento."""
     from ajustes import ajustes_sitio, contacto_email
 
     app = current_app
@@ -347,6 +348,40 @@ def cmd_verificar_config():
     agregar("ok" if os.getenv("FLASK_DEBUG") != "1" else "error",
             "Modo debug apagado." if os.getenv("FLASK_DEBUG") != "1" else "FLASK_DEBUG=1: apagalo en producción.")
 
+    try:
+        from models import PlanMembresia
+        sitio = ajustes_sitio()
+        agregar("ok" if sitio.get("whatsapp") else "aviso",
+                "WhatsApp cargado: se ve el botón flotante." if sitio.get("whatsapp")
+                else "Falta el número de WhatsApp (Contenido del sitio → Contacto): sin él no aparece el botón flotante.")
+        servidor = str(app.config.get("MAIL_SERVER") or "")
+        if mail_configurado() and "gmail" in servidor:
+            agregar("aviso", "Los mails salen por Gmail: sirve para empezar, pero tiene un límite diario y el newsletter "
+                             "puede caer en spam. Con muchos suscriptores usá un servicio con tu dominio (docs/MAILS.md).")
+        plan = db.session.execute(db.select(PlanMembresia).where(PlanMembresia.activo.is_(True))).first()
+        if plan:
+            agregar("aviso", "Membresía a la venta: en Mercado Pago → Webhooks tiene que estar marcado también "
+                             "«Planes y suscripciones».")
+    except Exception:
+        db.session.rollback()
+
+    return resultados
+
+
+@bp.route("/admin/lanzamiento")
+@admin_required
+def lanzamiento():
+    """Lo mismo que `flask verificar-config`, en el panel, más lo que se revisa a mano."""
+    resultados = revisar_configuracion()
+    return render_template("admin/lanzamiento.html", resultados=resultados,
+                           errores=sum(1 for n, _ in resultados if n == "error"),
+                           avisos=sum(1 for n, _ in resultados if n == "aviso"))
+
+
+@bp.cli.command("verificar-config")
+def cmd_verificar_config():
+    """Revisa que la configuración esté lista para recibir pagos reales."""
+    resultados = revisar_configuracion()
     iconos = {"ok": "✔", "aviso": "!", "error": "✘"}
     for nivel, texto in resultados:
         click.echo(f" {iconos[nivel]}  {texto}")
