@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Darse de baja | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-6">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5 text-center">
+            {% if hecha %}
+            <h1 class="h3 fw-bold mb-3">Listo, te diste de baja</h1>
+            <p class="text-secondary mb-4"><strong>{{ email }}</strong> ya no va a recibir las novedades de ENID por mail.
+                Si fue sin querer, te podés volver a anotar cuando quieras.</p>
+            <a class="btn btn-outline-dark" href="{{ url_for('noticias.listado') }}">Ver las noticias</a>
+            {% else %}
+            <h1 class="h3 fw-bold mb-3">¿Dejar de recibir novedades?</h1>
+            <p class="text-secondary mb-4">Vamos a dejar de mandar noticias a <strong>{{ email }}</strong>.
+                Los mails de tus cursos (comprobantes y avisos de clases) no cambian.</p>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-danger btn-lg" type="submit">Darme de baja</button>
+            </form>
+            {% endif %}
+        </div>
+    </div></div>
+</section>
+{% endblock %}

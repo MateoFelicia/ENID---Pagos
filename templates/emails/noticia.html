@@ -1,0 +1,10 @@
+{% extends "emails/base.html" %}
+{% from "emails/_macros.html" import boton, titulo %}
+{% block titulo %}{{ noticia.titulo }}{% endblock %}
+{% block contenido %}
+{% if url_imagen %}<img src="{{ url_imagen }}" alt="" width="544" style="display:block;width:100%;max-width:544px;height:auto;margin:0 0 20px;border-radius:4px;">{% endif %}
+{{ titulo(noticia.titulo | upper) }}
+{% if noticia.resumen %}<p style="font-size:18px;color:#444444;">{{ noticia.resumen }}</p>{% endif %}
+{% for parrafo in noticia.parrafos[:3] %}<p style="white-space:pre-line;">{{ parrafo }}</p>{% endfor %}
+{{ boton(url_noticia, "LEER EN LA WEB" if noticia.parrafos | length > 3 else "VER EN LA WEB") }}
+{% endblock %}

@@ -35,6 +35,7 @@ from models import (
     Arrepentimiento,
     Foto,
     Imagen,
+    Noticia,
     PreguntaFrecuente,
     Testimonio,
     Usuario,
@@ -158,6 +159,7 @@ def _borrar_si_huerfana(imagen_id):
             Ajuste.valor == str(imagen_id),
         ).count()
         + db.session.query(Usuario).filter_by(foto_id=imagen_id).count()
+        + db.session.query(Noticia).filter_by(imagen_id=imagen_id).count()
     )
     if usos == 0:
         imagen = db.session.get(Imagen, imagen_id)

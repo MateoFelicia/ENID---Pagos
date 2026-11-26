@@ -27,8 +27,8 @@
                             <a href="mailto:{{ contacto_email }}" style="color:#777777;">{{ contacto_email }}</a>.{% endif %}
                             {% if whatsapp %}<br>WhatsApp: <a href="https://wa.me/{{ whatsapp }}" style="color:#777777;">+{{ whatsapp }}</a>{% endif %}
                             {% if baja_url %}
-                            <br>Recibís este aviso porque estás inscripto en un curso.
-                            <a href="{{ baja_url }}" style="color:#777777;">No quiero recibir más avisos de clases</a>.
+                            <br>{{ texto_baja or "Recibís este aviso porque estás inscripto en un curso." }}
+                            <a href="{{ baja_url }}" style="color:#777777;">{{ texto_link_baja or "No quiero recibir más avisos de clases" }}</a>.
                             {% endif %}
                             {% if legal_titular %}<br>{{ legal_titular }}{% endif %}
                         </td>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Noticias | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="display-6 fw-bold mb-0">Noticias</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" href="{{ url_for('noticias.suscriptores') }}">Suscriptores ({{ activos }})</a>
+            <a class="btn btn-danger" href="{{ url_for('noticias.nueva') }}">Nueva noticia</a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-4 shadow-sm">
+        {% for n in noticias %}
+        <div class="d-flex flex-wrap gap-3 align-items-center p-3 {{ '' if loop.last else 'border-bottom' }}">
+            <div class="flex-grow-1" style="min-width: 240px">
+                <a class="fw-bold text-dark" href="{{ url_for('noticias.ver', noticia_id=n.id, slug=n.slug) }}">{{ n.titulo }}</a>
+                <div class="small text-secondary">
+                    {% if n.publicada %}Publicada el {{ n.publicada_en | dia }}{% else %}<span class="badge text-bg-secondary">Borrador</span>{% endif %}
+                    {% if n.enviada_en %} · Enviada por mail a {{ n.enviada_a }} el {{ n.enviada_en | dia }}{% endif %}
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if n.publicada and not n.enviada_en %}
+                <form method="POST" action="{{ url_for('noticias.enviar', noticia_id=n.id) }}"
+                    onsubmit="return confirm('¿Mandar esta noticia por mail a {{ activos }} suscriptor(es)? Se manda una sola vez.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-dark" type="submit" {{ 'disabled' if not activos else '' }}>Mandar por mail</button>
+                </form>
+                {% endif %}
+                <a class="btn btn-sm btn-outline-dark" href="{{ url_for('noticias.editar', noticia_id=n.id) }}">Editar</a>
+                <form method="POST" action="{{ url_for('noticias.eliminar', noticia_id=n.id) }}"
+                    onsubmit="return confirm('¿Eliminar esta noticia?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-secondary p-4 mb-0">Todavía no hay noticias. La primera puede ser la fecha de arranque de un curso.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+<article class="tarjeta-noticia">
+    <a href="{{ url_for('noticias.ver', noticia_id=noticia.id, slug=noticia.slug) }}" class="stretched-link" aria-label="{{ noticia.titulo }}"></a>
+    {% if noticia.imagen_id %}
+    <img src="{{ url_for('sitio.media', imagen_id=noticia.imagen_id) }}" alt="" width="600" height="338" loading="lazy">
+    {% else %}
+    <div class="tarjeta-noticia-sin-foto" aria-hidden="true">{{ icono("noticias", 44) }}</div>
+    {% endif %}
+    <div class="p-4">
+        <p class="tarjeta-noticia-fecha">{{ noticia.publicada_en | dia }}</p>
+        <h3>{{ noticia.titulo }}</h3>
+        <p class="mb-0">{{ (noticia.resumen or (noticia.parrafos[0] if noticia.parrafos else '')) | truncate(140) }}</p>
+    </div>
+</article>

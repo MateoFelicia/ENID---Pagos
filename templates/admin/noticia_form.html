@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block title %}{{ titulo }} | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center"><div class="col-lg-8">
+        <div class="bg-white rounded-4 shadow p-4 p-md-5">
+            <h1 class="h3 fw-bold mb-4">{{ titulo }}</h1>
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {{ form.hidden_tag() }}
+                {{ campo(form.titulo) }}
+                {{ campo(form.resumen) }}
+                {{ campo(form.cuerpo, rows="12") }}
+                {% if noticia and noticia.imagen_id %}
+                <img src="{{ url_for('sitio.media', imagen_id=noticia.imagen_id) }}" alt="" class="rounded mb-2" style="max-height:140px">
+                {{ campo(form.quitar_foto) }}
+                {% endif %}
+                {{ campo(form.foto, accept="image/*") }}
+                {{ campo(form.publicada) }}
+                <p class="small text-secondary">Guardar no manda mails. Para avisar a los suscriptores, usá «Mandar por mail» en la lista.</p>
+                <div class="d-flex gap-2">
+                    {{ form.enviar(class="btn btn-danger") }}
+                    <a class="btn btn-outline-secondary" href="{{ url_for('noticias.administrar') }}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div></div>
+</section>
+{% endblock %}

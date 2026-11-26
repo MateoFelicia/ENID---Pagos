@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Suscriptores | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
+        <h1 class="display-6 fw-bold mb-0">Suscriptores al newsletter</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" href="{{ url_for('noticias.administrar') }}">← Noticias</a>
+            <a class="btn btn-dark" href="{{ url_for('noticias.suscriptores', formato='csv') }}">Descargar CSV</a>
+        </div>
+    </div>
+    <p class="text-secondary mb-4">Solo los «activos» reciben las noticias: confirmaron su mail y no se dieron de baja.</p>
+
+    <div class="table-responsive bg-white rounded-4 shadow-sm">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>Email</th><th>Estado</th><th>Se anotó</th><th></th></tr></thead>
+            <tbody>
+                {% for s in suscriptores %}
+                <tr>
+                    <td>{{ s.email }}</td>
+                    <td>
+                        {% if s.activo %}<span class="badge text-bg-success">Activo</span>
+                        {% elif s.baja_en %}<span class="badge text-bg-secondary">Se dio de baja</span>
+                        {% else %}<span class="badge text-bg-warning">Sin confirmar</span>{% endif %}
+                    </td>
+                    <td class="small text-secondary">{{ s.creado_en | dia }}</td>
+                    <td class="text-end">
+                        <form method="POST" action="{{ url_for('noticias.eliminar_suscriptor', suscriptor_id=s.id) }}"
+                            onsubmit="return confirm('¿Borrar {{ s.email }} de la lista?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Borrar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-secondary p-4">Todavía no se anotó nadie.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

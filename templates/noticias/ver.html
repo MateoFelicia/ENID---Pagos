@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_newsletter.html" import form_newsletter with context %}
+{% block title %}{{ noticia.titulo }} | ENID{% endblock %}
+{% block descripcion %}{{ (noticia.resumen or (noticia.parrafos[0] if noticia.parrafos else '')) | truncate(155) }}{% endblock %}
+{% block content %}
+<article class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <a class="link-secondary small" href="{{ url_for('noticias.listado') }}">← Todas las noticias</a>
+            {% if not noticia.publicada %}<div class="alert alert-warning mt-3 mb-0">Borrador: solo lo ves vos.</div>{% endif %}
+            <p class="text-danger fw-bold small mt-4 mb-2">{{ noticia.publicada_en | dia if noticia.publicada_en else 'Sin publicar' }}</p>
+            <h1 class="display-6 fw-bold mb-3">{{ noticia.titulo }}</h1>
+            {% if noticia.resumen %}<p class="lead text-secondary">{{ noticia.resumen }}</p>{% endif %}
+            {% if noticia.imagen_id %}
+            <img class="noticia-imagen my-4" src="{{ url_for('sitio.media', imagen_id=noticia.imagen_id) }}" alt="" width="1200" height="675">
+            {% endif %}
+            <div class="noticia-cuerpo">
+                {% for parrafo in noticia.parrafos %}<p>{{ parrafo }}</p>{% endfor %}
+            </div>
+
+            <div class="caja-newsletter mt-5">
+                <p class="fw-bold mb-2">{{ icono("noticias", 20) }} ¿Querés recibir estas novedades por mail?</p>
+                {{ form_newsletter(id="newsletter-noticia") }}
+            </div>
+        </div>
+    </div>
+
+    {% if otras %}
+    <h2 class="h4 fw-bold mt-5 mb-3">Más noticias</h2>
+    <div class="row g-4">
+        {% for noticia in otras %}<div class="col-md-4">{% include "noticias/_tarjeta.html" %}</div>{% endfor %}
+    </div>
+    {% endif %}
+</article>
+{% endblock %}

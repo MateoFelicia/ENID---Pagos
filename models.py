@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 from db import db
@@ -437,3 +439,51 @@ class Arrepentimiento(db.Model):
     motivo = db.Column(db.String(1000))
     estado = db.Column(db.String(20), nullable=False, default="recibida", server_default="recibida")
     creado_en = db.Column(db.DateTime, default=ahora_argentina)
+
+
+# ---------------------------------------------------------------------------
+# Noticias y newsletter
+# ---------------------------------------------------------------------------
+
+class Noticia(db.Model):
+    """Novedad del sitio. Se publica en /noticias y se puede mandar por mail a los suscriptores."""
+    __tablename__ = "noticias"
+
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(160), nullable=False)
+    resumen = db.Column(db.String(300))
+    cuerpo = db.Column(db.Text, nullable=False)
+    imagen_id = db.Column(db.Integer, db.ForeignKey("imagenes.id"))
+    publicada = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    publicada_en = db.Column(db.DateTime)
+    creada_en = db.Column(db.DateTime, default=ahora_argentina)
+    enviada_en = db.Column(db.DateTime)   # cuándo salió por mail (se manda una sola vez)
+    enviada_a = db.Column(db.Integer)     # a cuántos suscriptores
+
+    imagen = db.relationship("Imagen")
+
+    @property
+    def slug(self):
+        """Texto legible para la URL: «Arranca el curso de DT» -> «arranca-el-curso-de-dt»."""
+        texto = unicodedata.normalize("NFKD", self.titulo or "").encode("ascii", "ignore").decode().lower()
+        return "-".join(re.findall(r"[a-z0-9]+", texto))[:80] or "noticia"
+
+    @property
+    def parrafos(self):
+        return [p.strip() for p in re.split(r"\n\s*\n", self.cuerpo or "") if p.strip()]
+
+
+class Suscriptor(db.Model):
+    """Mail anotado al newsletter. Recibe noticias solo después de confirmar (doble opt-in)."""
+    __tablename__ = "suscriptores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    confirmado = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    creado_en = db.Column(db.DateTime, default=ahora_argentina)
+    confirmado_en = db.Column(db.DateTime)
+    baja_en = db.Column(db.DateTime)
+
+    @property
+    def activo(self):
+        return self.confirmado and self.baja_en is None

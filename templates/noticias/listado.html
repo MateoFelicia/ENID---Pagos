@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_newsletter.html" import form_newsletter with context %}
+{% block title %}Noticias | ENID{% endblock %}
+{% block descripcion %}Novedades de ENID: cursos nuevos, clases en vivo y formación para entrenadores.{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="row align-items-end g-4 mb-5">
+        <div class="col-lg-7">
+            <p class="text-danger fw-bold text-uppercase mb-2">{{ icono("noticias", 20) }} Novedades</p>
+            <h1 class="display-5 fw-bold mb-2">Noticias de ENID</h1>
+            <p class="text-secondary mb-0">Cursos nuevos, fechas de clases en vivo y lo que pasa en la escuela.</p>
+        </div>
+        <div class="col-lg-5">
+            <div class="caja-newsletter">
+                <p class="fw-bold mb-2">Recibí las novedades por mail</p>
+                {{ form_newsletter(id="newsletter-listado") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for noticia in pagina.items %}
+        <div class="col-md-6 col-lg-4">{% include "noticias/_tarjeta.html" %}</div>
+        {% else %}
+        <p class="text-secondary">Todavía no hay noticias publicadas. Suscribite y te avisamos cuando haya.</p>
+        {% endfor %}
+    </div>
+
+    {% if pagina.pages > 1 %}
+    <nav class="d-flex justify-content-center gap-2 mt-5" aria-label="Páginas">
+        {% if pagina.has_prev %}<a class="btn btn-outline-dark" href="{{ url_for('noticias.listado', pagina=pagina.prev_num) }}">← Más nuevas</a>{% endif %}
+        {% if pagina.has_next %}<a class="btn btn-outline-dark" href="{{ url_for('noticias.listado', pagina=pagina.next_num) }}">Más viejas →</a>{% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,3 +1,4 @@
+{% from "_newsletter.html" import form_newsletter with context -%}
 <!doctype html>
 <html lang="es">
 
@@ -47,6 +48,9 @@
                         <a class="nav-link" href="{{ url_for('profes.listado') }}">Profes</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('noticias.listado') }}">Noticias</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="btn btn-danger btn-inscripcion" href="{{ url_for('inicio') }}#precio">INSCRIBIRME</a>
                     </li>
 
@@ -74,6 +78,7 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('gestion.importar_alumnos') }}">Dar acceso a varios (lista o CSV)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sitio.admin_sitio') }}">Contenido del sitio</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('noticias.administrar') }}">Noticias y newsletter</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sitio.admin_arrepentimientos') }}">Arrepentimientos</a></li>
                         </ul>
                     </li>
@@ -144,6 +149,8 @@
                     <ul class="pie-lista">
                         <li><a href="{{ url_for('inicio') }}#propuesta">La propuesta</a></li>
                         <li><a href="{{ url_for('inicio') }}#precio">Cursos</a></li>
+                        <li><a href="{{ url_for('noticias.listado') }}">Noticias</a></li>
+                        <li><a href="{{ url_for('profes.listado') }}">Profes</a></li>
                         <li><a href="{{ url_for('inicio') }}#preguntas">Preguntas frecuentes</a></li>
                         {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('mis_inscripciones') }}">Mis cursos</a></li>
@@ -172,6 +179,10 @@
                         <li class="pie-texto">Pronto vas a poder escribirnos desde acá.</li>
                         {% endif %}
                     </ul>
+                    {% if request.endpoint not in ('noticias.listado', 'noticias.ver', 'inicio') %}
+                    <p class="pie-titulo mt-4">Novedades por mail</p>
+                    {{ form_newsletter(oscuro=True, id="newsletter-pie") }}
+                    {% endif %}
                 </div>
             </div>
 

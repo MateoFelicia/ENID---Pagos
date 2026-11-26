@@ -255,3 +255,19 @@ class NuevoProfeForm(FlaskForm):
     nombre = StringField("Nombre y apellido", validators=[DataRequired(), Length(min=2, max=120)])
     email = EmailField("Email", validators=[DataRequired(), Email(), Length(max=120)])
     enviar = SubmitField("Agregar profe")
+
+
+class NoticiaForm(FlaskForm):
+    titulo = StringField("Título", validators=[DataRequired(), Length(max=160)])
+    resumen = StringField(
+        "Bajada (opcional)", validators=[Optional(), Length(max=300)],
+        description="Una o dos líneas que se ven en el listado y en el mail."
+    )
+    cuerpo = TextAreaField(
+        "Texto", validators=[DataRequired(), Length(max=20000)],
+        description="Dejá una línea en blanco entre párrafos."
+    )
+    foto = FileField("Imagen (opcional)", validators=[Optional(), _solo_imagenes])
+    quitar_foto = BooleanField("Quitar la imagen actual")
+    publicada = BooleanField("Publicada (visible en la web)", default=True)
+    enviar = SubmitField("Guardar noticia")
