@@ -17,7 +17,8 @@ services:
     expose:
       - "8000"
 
-  # Recordatorios de clases en vivo: corre cada 10 minutos (no envía nada dos veces)
+  # Recordatorios de clases en vivo: corre cada 10 minutos (no envía nada dos veces).
+  # Una vez por día también revisa las membresías en Mercado Pago (respaldo de los webhooks).
   recordatorios:
     build: .
     restart: unless-stopped
@@ -25,7 +26,7 @@ services:
     environment:
       DATABASE_URL: postgresql://enid:${POSTGRES_PASSWORD}@db:5432/enid
       RUN_MIGRATIONS: "0"
-    command: ["sh", "-c", "while true; do flask enviar-recordatorios; sleep 600; done"]
+    command: ["sh", "-c", "i=0; while true; do flask enviar-recordatorios; if [ $((i % 144)) -eq 0 ]; then flask sincronizar-membresias; fi; i=$((i+1)); sleep 600; done"]
     depends_on:
       web:
         condition: service_healthy

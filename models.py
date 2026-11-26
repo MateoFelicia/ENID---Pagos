@@ -83,6 +83,17 @@ class Usuario(UserMixin, db.Model):
         order_by="Curso.id"
     )
 
+    suscripciones = db.relationship(
+        "Suscripcion",
+        back_populates="usuario",
+        order_by="Suscripcion.id.desc()"
+    )
+
+    @property
+    def membresia_activa(self):
+        """La suscripción que hoy le da acceso a todos los cursos, o None."""
+        return next((s for s in self.suscripciones if s.da_acceso()), None)
+
     def dicta(self, curso):
         return self.es_profesor and any(c.id == curso.id for c in self.cursos_dictados)
 
@@ -262,6 +273,56 @@ class Inscripcion(db.Model):
             return "Mercado Pago"
         return NOMBRE_MEDIO.get(self.medio, "A mano")
     
+class PlanMembresia(db.Model):
+    """Membresía mensual: con una suscripción activa el alumno entra a todos los cursos."""
+    __tablename__ = "planes_membresia"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False, default="Membresía ENID")
+    descripcion = db.Column(db.String(500))
+    precio = db.Column(db.Numeric(10, 2), nullable=False)
+    activo = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+
+
+# Estados de una suscripción (los de Mercado Pago: pending, authorized, paused, cancelled)
+ESTADOS_SUSCRIPCION = {
+    "pending": "Esperando el primer pago",
+    "authorized": "Activa",
+    "paused": "Pausada",
+    "cancelled": "Cancelada",
+}
+
+
+class Suscripcion(db.Model):
+    """Suscripción de un usuario a la membresía (preapproval de Mercado Pago)."""
+    __tablename__ = "suscripciones"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False)
+    plan_id = db.Column(db.Integer, db.ForeignKey("planes_membresia.id"), nullable=False)
+    estado = db.Column(db.String(20), nullable=False, default="pending", server_default="pending")
+    monto = db.Column(db.Numeric(10, 2), nullable=False)
+    mp_preapproval_id = db.Column(db.String(80), unique=True)
+    creado_en = db.Column(db.DateTime, default=ahora_argentina)
+    actualizado_en = db.Column(db.DateTime, default=ahora_argentina, onupdate=ahora_argentina)
+    proximo_cobro = db.Column(db.DateTime)
+    # Al cancelar, conserva el acceso hasta el final del mes ya pagado
+    acceso_hasta = db.Column(db.DateTime)
+
+    usuario = db.relationship("Usuario", back_populates="suscripciones")
+    plan = db.relationship("PlanMembresia")
+
+    def da_acceso(self, ahora=None):
+        if self.estado == "authorized":
+            return True
+        ahora = ahora or ahora_argentina()
+        return self.acceso_hasta is not None and ahora < self.acceso_hasta
+
+    @property
+    def estado_legible(self):
+        return ESTADOS_SUSCRIPCION.get(self.estado, self.estado)
+
+
 class Pago(db.Model):
     __tablename__ = "pagos"
 

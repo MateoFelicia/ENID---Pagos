@@ -62,7 +62,7 @@ Después, desde la web: **Administración → Cursos y clases** (cargá los curs
 4. Agregá tu dominio personalizado en el panel del hosting y creá el registro DNS que te indique.
 5. Corré `flask crear-admin` desde la consola del servicio.
 6. **Recordatorios de clases**, a elegir:
-   - un *Cron Job* del hosting que ejecute `flask enviar-recordatorios` cada 10 minutos, o
+   - un *Cron Job* del hosting que ejecute `flask enviar-recordatorios` cada 10 minutos (y `flask sincronizar-membresias` una vez por día, si usás la membresía), o
    - un servicio de cron externo que llame a `POST https://tu-dominio/tareas/recordatorios` con la cabecera `Authorization: Bearer <CRON_TOKEN>` (definí `CRON_TOKEN` en las variables).
 7. Los backups dependen del hosting: activá los de la base de datos.
 
@@ -73,7 +73,7 @@ Según la documentación oficial de Checkout Pro:
 
 1. En **Tus integraciones**, abrí tu aplicación → **Credenciales de producción** → **Activar credenciales**. Te pide el rubro, la **URL de tu sitio web** (tu dominio https) y aceptar los términos.
 2. Copiá el **Access Token de producción** en `MP_ACCESS_TOKEN` (reemplaza al de prueba).
-3. En **Webhooks → Configurar notificaciones**, en la pestaña **de producción**, poné `https://tu-dominio/webhooks/mercadopago`, marcá el evento **Pagos** y guardá. Copiá la **clave secreta** en `MP_WEBHOOK_SECRET`.
+3. En **Webhooks → Configurar notificaciones**, en la pestaña **de producción**, poné `https://tu-dominio/webhooks/mercadopago`, marcá los eventos **Pagos** y **Planes y suscripciones** (para la membresía mensual) y guardá. Copiá la **clave secreta** en `MP_WEBHOOK_SECRET`.
 4. Reiniciá (`docker compose up -d`) y corré `flask verificar-config`.
 5. **En producción Mercado Pago exige certificado SSL**: con HTTPS ya lo cumplís.
 6. Opcional pero recomendable: en el panel de Mercado Pago, la herramienta **Medir la calidad de la integración**: le pasás el ID de un pago real y te indica qué mejorar.

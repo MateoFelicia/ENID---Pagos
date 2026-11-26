@@ -79,6 +79,12 @@ Cada curso tiene **varias clases**. Una clase puede ser:
 
 Flujo típico: creás la clase en vivo con su Meet → pasa la clase → la editás y pegás el link de la grabación. Los links tienen que empezar con `http://` o `https://`.
 
+### Membresía mensual
+
+En **Administración → Membresía** definís el precio por mes y la ponés a la venta. Aparece como una tarjeta en la portada y en `/membresia`. El alumno se suscribe con Mercado Pago (débito automático con tarjeta) y, mientras la suscripción esté activa, **entra a todos los cursos**. Si cancela, no se le cobra más y conserva el acceso hasta la fecha del cobro siguiente. Los cursos se siguen vendiendo sueltos con acceso permanente.
+
+Igual que los pagos, la web nunca confía en la URL de vuelta: confirma cada suscripción consultando a Mercado Pago (webhook *Planes y suscripciones*), y `flask sincronizar-membresias` (diario) sirve de respaldo.
+
 ### Profesores
 
 Un profe ve **Panel del profe** (`/profe`) en el menú: ahí están sus cursos y edita su perfil. Puede crear y editar módulos, clases y partes **solo de los cursos que dicta**, y entra a ellos sin pagar. No ve pagos, alumnos ni el resto del panel. Los profes aparecen en la página pública `/profesores`, en la ficha de cada curso y en las tarjetas de la portada.
@@ -99,6 +105,7 @@ Un profe ve **Panel del profe** (`/profe`) en el menú: ahí están sus cursos y
 | `/admin/inscripciones` | Todas las inscripciones con su pago; eliminación |
 | `/admin/cursos` y `/admin/cursos/<id>/clases` | Cursos (nombre, descripción, precio), sus **módulos** y sus **clases** (en vivo, grabadas o ambas, divididas en partes; borradores; aviso por mail al guardar) |
 | `/admin/profesores` | **Profesores:** alta por email (crea la cuenta y da un enlace para elegir contraseña), perfil con foto, cursos que dicta y quitar el rol |
+| `/admin/membresia` | **Membresía mensual:** nombre, precio, a la venta o no, y la lista de suscripciones con su estado |
 | `/admin/sitio` | **Contenido del sitio:** entrenador, foto de portada, galería de fotos, testimonios, preguntas frecuentes, WhatsApp / Instagram / email, datos legales |
 | `/admin/arrepentimientos` | Solicitudes del botón de arrepentimiento |
 
@@ -118,6 +125,7 @@ En Excel o Google Sheets armá una planilla con las columnas `nombre`, `email`, 
 | `flask db upgrade` | Crea o actualiza las tablas (correrlo después de cada actualización) |
 | `flask crear-admin` | Crea (o promueve) un administrador |
 | `flask seed-cursos` | Carga cursos y clases de ejemplo |
+| `flask sincronizar-membresias` | Vuelve a consultar las membresías en Mercado Pago (respaldo de los webhooks; correrlo a diario) |
 | `flask verificar-config` | Revisa que la configuración esté lista para cobrar de verdad |
 | `flask probar-mail tu@correo.com` | Prueba el envío de mails y muestra el error exacto si falla |
 | `flask enviar-recordatorios [--dry-run]` | Recordatorios de clases en vivo (programarlo cada 10 minutos) |

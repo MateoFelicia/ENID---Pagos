@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 from db import db
 from emailer import armar_aviso_clase, armar_recordatorio, enviar_varios
-from models import Clase, EnvioAviso, Inscripcion, ahora_argentina
+from models import Clase, EnvioAviso, Inscripcion, Suscripcion, Usuario, ahora_argentina
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +34,16 @@ def alumnos_con_acceso(curso, solo_con_avisos=True):
     for inscripcion in inscripciones:
         usuario = inscripcion.usuario
         if not inscripcion.tiene_acceso() or not usuario or not usuario.email:
+            continue
+        if solo_con_avisos and not usuario.avisos_email:
+            continue
+        alumnos[usuario.id] = usuario
+    # Los miembros con la membresía activa también tienen acceso a todos los cursos
+    miembros = db.session.execute(
+        db.select(Usuario).join(Suscripcion).where(Suscripcion.estado.in_(["authorized", "cancelled", "paused"]))
+    ).scalars().unique().all()
+    for usuario in miembros:
+        if usuario.id in alumnos or not usuario.email or usuario.membresia_activa is None:
             continue
         if solo_con_avisos and not usuario.avisos_email:
             continue
