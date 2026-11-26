@@ -79,6 +79,12 @@ class Curso(db.Model):
     grabacion = db.Column(db.String(300))
 
     inscripciones = db.relationship("Inscripcion", back_populates="curso")
+    modulos = db.relationship(
+        "Modulo",
+        back_populates="curso",
+        cascade="all, delete-orphan",
+        order_by="Modulo.orden, Modulo.id"
+    )
     clases = db.relationship(
         "Clase",
         back_populates="curso",
@@ -93,6 +99,8 @@ class Clase(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     curso_id = db.Column(db.Integer, db.ForeignKey("cursos.id"), nullable=False)
+    # Opcional: las clases sin módulo se muestran juntas al final
+    modulo_id = db.Column(db.Integer, db.ForeignKey("modulos.id", ondelete="SET NULL"))
     titulo = db.Column(db.String(160), nullable=False)
     descripcion = db.Column(db.String(500))
     orden = db.Column(db.Integer, nullable=False, default=1, server_default="1")
@@ -107,7 +115,15 @@ class Clase(db.Model):
     )
 
     curso = db.relationship("Curso", back_populates="clases")
+    modulo = db.relationship("Modulo", back_populates="clases")
     envios = db.relationship("EnvioAviso", cascade="all, delete-orphan")
+    partes = db.relationship(
+        "Parte",
+        back_populates="clase",
+        cascade="all, delete-orphan",
+        order_by="Parte.orden, Parte.id"
+    )
+    progresos = db.relationship("Progreso", cascade="all, delete-orphan")
 
     def estado(self, ahora=None):
         """grabada | en_curso | proxima | esperando_grabacion | sin_contenido"""
@@ -121,6 +137,47 @@ class Clase(db.Model):
                 return "en_curso"
             return "esperando_grabacion"
         return "sin_contenido"
+
+
+class Modulo(db.Model):
+    """Agrupa clases de un curso (Módulo 1: Táctica, Módulo 2: Preparación física...)."""
+    __tablename__ = "modulos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    curso_id = db.Column(db.Integer, db.ForeignKey("cursos.id"), nullable=False)
+    titulo = db.Column(db.String(160), nullable=False)
+    descripcion = db.Column(db.String(500))
+    orden = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+
+    curso = db.relationship("Curso", back_populates="modulos")
+    clases = db.relationship("Clase", back_populates="modulo", order_by="Clase.orden, Clase.id")
+
+
+class Parte(db.Model):
+    """Un video dentro de una clase, como los capítulos de una lista de YouTube."""
+    __tablename__ = "partes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    clase_id = db.Column(db.Integer, db.ForeignKey("clases.id", ondelete="CASCADE"), nullable=False)
+    titulo = db.Column(db.String(160), nullable=False)
+    video_url = db.Column(db.String(300))
+    duracion_min = db.Column(db.Integer)
+    orden = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+
+    clase = db.relationship("Clase", back_populates="partes")
+    progresos = db.relationship("Progreso", cascade="all, delete-orphan")
+
+
+class Progreso(db.Model):
+    """Lo que un alumno marcó como visto: una parte, o la clase entera si no tiene partes."""
+    __tablename__ = "progresos"
+    __table_args__ = (UniqueConstraint("usuario_id", "clase_id", "parte_id", name="uq_progreso"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False)
+    clase_id = db.Column(db.Integer, db.ForeignKey("clases.id", ondelete="CASCADE"), nullable=False)
+    parte_id = db.Column(db.Integer, db.ForeignKey("partes.id", ondelete="CASCADE"))
+    completado_en = db.Column(db.DateTime, default=ahora_argentina)
 
 
 class Inscripcion(db.Model):

@@ -29,6 +29,13 @@
                         {% endfor %}
                     </div>
 
+                    {% if curso.modulos %}
+                    <div class="mb-3">
+                        {{ form.modulo_id.label(class="form-label") }}
+                        {{ form.modulo_id(class="form-select") }}
+                    </div>
+                    {% endif %}
+
                     <div class="mb-3">
                         {{ form.orden.label(class="form-label") }}
                         {{ form.orden(class="form-control", min="0") }}
@@ -61,7 +68,8 @@
 
                     <div class="p-3 bg-light rounded-3 mb-3">
                         <p class="fw-bold mb-1">Clase grabada</p>
-                        <p class="text-secondary small">Cuando esté el video, pegá el link (Drive, YouTube no listado, etc.). Si hay grabación, se muestra esa en lugar del Meet.</p>
+                        <p class="text-secondary small">Cuando esté el video, pegá el link (Drive, YouTube no listado, etc.). Si hay grabación, se muestra esa en lugar del Meet.
+                            Si la clase tiene varios videos, dejá esto vacío y cargalos como <strong>partes</strong> después de guardar.</p>
 
                     <div class="mb-3">
                         {{ form.grabacion.label(class="form-label") }}

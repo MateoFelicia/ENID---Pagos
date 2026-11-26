@@ -2,6 +2,14 @@
 
 {% block title %}{{ curso.nombre }} | ENID{% endblock %}
 
+{# Barra de progreso reutilizable #}
+{% macro barra(avance, alto='8px') -%}
+<div class="progress progreso-enid" role="progressbar" aria-label="Progreso" aria-valuenow="{{ avance.porcentaje }}"
+    aria-valuemin="0" aria-valuemax="100" style="height: {{ alto }};">
+    <div class="progress-bar" style="width: {{ avance.porcentaje }}%"></div>
+</div>
+{%- endmacro %}
+
 {% block content %}
 {% set grabadas = clases | selectattr('grabacion') | list | length %}
 <section class="container py-5">
@@ -13,13 +21,29 @@
                 {% if curso.descripcion %}
                 <p class="text-secondary mb-3">{{ curso.descripcion }}</p>
                 {% endif %}
-                <p class="mb-0">
+                <p class="mb-3">
+                    {% if curso.modulos %}<span class="badge text-bg-dark">{{ grupos | selectattr('modulo') | list | length }} módulos</span>{% endif %}
                     <span class="badge text-bg-dark">{{ clases | length }} clase{{ '' if clases | length == 1 else 's' }}</span>
                     {% if grabadas %}<span class="badge text-bg-secondary">{{ grabadas }} grabada{{ '' if grabadas == 1 else 's' }}</span>{% endif %}
                     {% if current_user.es_admin %}
                     <a class="btn btn-sm btn-outline-dark ms-2" href="{{ url_for('administrar_clases', curso_id=curso.id) }}">Gestionar clases</a>
                     {% endif %}
                 </p>
+
+                {% if clases %}
+                <div class="d-flex justify-content-between small fw-semibold mb-1">
+                    <span>Tu progreso en el curso</span>
+                    <span>{{ total.porcentaje }}%</span>
+                </div>
+                {{ barra(total, '12px') }}
+                {% if continuar %}
+                <a href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=continuar.id) }}" class="btn btn-danger fw-bold mt-3">
+                    {% if total.hechas %}Seguir viendo: {% else %}Empezar: {% endif %}{{ continuar.titulo }}
+                </a>
+                {% elif total.completo %}
+                <p class="fw-bold text-success mt-3 mb-0">¡Completaste el curso! 🎉</p>
+                {% endif %}
+                {% endif %}
             </div>
 
             {% if proxima %}
@@ -35,16 +59,31 @@
             </div>
             {% endif %}
 
+            {% for grupo in grupos %}
+            {% set mostrar_titulo = grupo.modulo or grupos | length > 1 %}
             <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5 mb-4">
+                {% if mostrar_titulo %}
+                <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-1">
+                    <h2 class="h5 fw-bold mb-0">{{ grupo.titulo }}</h2>
+                    <span class="small fw-semibold">{{ grupo.avance.porcentaje }}% completado</span>
+                </div>
+                {% if grupo.modulo and grupo.modulo.descripcion %}<p class="text-secondary small mb-2">{{ grupo.modulo.descripcion }}</p>{% endif %}
+                <div class="mb-3">{{ barra(grupo.avance, '6px') }}</div>
+                {% else %}
                 <h2 class="h5 fw-bold mb-3">Clases del curso</h2>
+                {% endif %}
 
-                {% for clase in clases %}
+                {% for clase in grupo.clases %}
                 {% set estado = clase.estado(ahora) %}
+                {% set av = por_clase[clase.id] %}
                 <div class="d-flex gap-3 py-3 {% if not loop.last %}border-bottom{% endif %}">
-                    <div class="fw-bold text-danger fs-4" style="min-width:2rem;">{{ loop.index }}</div>
+                    <div class="fw-bold fs-4 {{ 'text-success' if av.completo else 'text-danger' }}" style="min-width:2rem;">
+                        {% if av.completo %}✓{% else %}{{ loop.index }}{% endif %}
+                    </div>
                     <div class="flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <strong>{{ clase.titulo }}</strong>
+                            <a class="fw-bold text-dark" href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=clase.id) }}">{{ clase.titulo }}</a>
+                            {% if clase.partes %}<span class="badge text-bg-light border text-dark">{{ clase.partes | length }} partes</span>{% endif %}
                             {% if estado == 'grabada' %}<span class="badge text-bg-secondary">Grabada</span>{% endif %}
                             {% if estado == 'en_curso' %}<span class="badge text-bg-danger">En vivo ahora</span>{% endif %}
                             {% if estado == 'proxima' %}<span class="badge text-bg-warning">En vivo</span>{% endif %}
@@ -52,22 +91,32 @@
                         </div>
                         {% if clase.descripcion %}<p class="text-secondary small mb-2">{{ clase.descripcion }}</p>{% endif %}
                         {% if clase.fecha %}<p class="small mb-2">{{ clase.fecha | fecha_ar }}</p>{% endif %}
+                        {% if av.total > 1 %}
+                        <div class="d-flex align-items-center gap-2 mb-2" style="max-width: 320px;">
+                            <div class="flex-grow-1">{{ barra(av, '5px') }}</div>
+                            <span class="small text-secondary">{{ av.hechas }}/{{ av.total }}</span>
+                        </div>
+                        {% endif %}
 
-                        {% if estado == 'grabada' %}
-                        <a href="{{ clase.grabacion }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-dark btn-sm">Ver grabación</a>
-                        {% elif estado == 'en_curso' or estado == 'proxima' %}
+                        {% if estado == 'en_curso' or estado == 'proxima' %}
                         <a href="{{ clase.meet_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-danger btn-sm">Entrar a la clase en vivo</a>
-                        {% elif estado == 'esperando_grabacion' %}
-                        <span class="text-secondary small">La grabación se publicará pronto.</span>
-                        {% else %}
-                        <span class="text-secondary small">El contenido se habilitará próximamente.</span>
+                        {% endif %}
+                        <a href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=clase.id) }}" class="btn btn-outline-dark btn-sm">
+                            {% if av.completo %}Volver a ver{% elif av.hechas %}Continuar{% elif estado == 'grabada' %}Ver grabación{% else %}Ver clase{% endif %}
+                        </a>
+                        {% if estado == 'esperando_grabacion' and not clase.partes %}
+                        <span class="text-secondary small ms-1">La grabación se publicará pronto.</span>
                         {% endif %}
                     </div>
                 </div>
-                {% else %}
-                <p class="text-secondary mb-0">Las clases se publicarán muy pronto.</p>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5 mb-4">
+                <h2 class="h5 fw-bold mb-3">Clases del curso</h2>
+                <p class="text-secondary mb-0">Las clases se publicarán muy pronto.</p>
+            </div>
+            {% endfor %}
 
             <a href="{{ url_for('mis_inscripciones') }}" class="btn btn-outline-secondary">
                 Volver a mis inscripciones

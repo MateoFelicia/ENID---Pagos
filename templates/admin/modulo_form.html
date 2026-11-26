@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+
+{% block title %}{{ titulo }} | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">{{ curso.nombre }}</p>
+                <h1 class="h2 fw-bold mb-2">{{ titulo }}</h1>
+                <p class="text-secondary mb-4">Un módulo agrupa clases. Después, en cada clase elegís a qué módulo pertenece.</p>
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    {{ campo(form.titulo) }}
+                    {{ campo(form.descripcion, rows="3") }}
+                    {{ campo(form.orden, min="0") }}
+                    <div class="d-flex gap-2">
+                        {{ form.enviar(class="btn btn-danger") }}
+                        <a href="{{ url_for('administrar_clases', curso_id=curso.id) }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
