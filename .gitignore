@@ -5,3 +5,9 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# Entorno virtual creado por error en la raíz del proyecto (Windows)
+/Lib/
+/Include/
+/Scripts/
+/pyvenv.cfg

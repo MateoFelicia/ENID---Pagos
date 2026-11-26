@@ -110,7 +110,7 @@ En Excel o Google Sheets armá una planilla con las columnas `nombre`, `email`, 
 | `flask verificar-config` | Revisa que la configuración esté lista para cobrar de verdad |
 | `flask probar-mail tu@correo.com` | Prueba el envío de mails y muestra el error exacto si falla |
 | `flask enviar-recordatorios [--dry-run]` | Recordatorios de clases en vivo (programarlo cada 10 minutos) |
-| `scripts/backup.sh` | Copia de seguridad comprimida de la base |
+| `herramientas/backup.sh` | Copia de seguridad comprimida de la base |
 
 ## Poner online
 
@@ -125,7 +125,7 @@ pip install -r requirements-dev.txt
 pytest tests
 ```
 
-Cubren el circuito completo con Mercado Pago simulado (registro → compra → webhook firmado → acceso, firma inválida, monto alterado, rechazos, reembolsos, retorno sin webhook), clases, dar y quitar acceso, importación CSV, mails y recordatorios (sin duplicados), subida y optimización de fotos, testimonios, páginas legales, arrepentimiento, cabeceras de seguridad, límite de intentos y verificación de configuración. Para correrlos contra PostgreSQL: `TEST_DATABASE_URL=postgresql://usuario:clave@localhost/base_de_prueba pytest tests`. `scripts/probar_webhook.py` manda un webhook firmado a tu servidor local.
+Cubren el circuito completo con Mercado Pago simulado (registro → compra → webhook firmado → acceso, firma inválida, monto alterado, rechazos, reembolsos, retorno sin webhook), clases, dar y quitar acceso, importación CSV, mails y recordatorios (sin duplicados), subida y optimización de fotos, testimonios, páginas legales, arrepentimiento, cabeceras de seguridad, límite de intentos y verificación de configuración. Para correrlos contra PostgreSQL: `TEST_DATABASE_URL=postgresql://usuario:clave@localhost/base_de_prueba pytest tests`. `herramientas/probar_webhook.py` manda un webhook firmado a tu servidor local.
 
 ## Estructura
 
@@ -143,7 +143,7 @@ migrations/       Alembic (flask db upgrade)
 templates/        Jinja2 (admin/ panel, emails/, legal/, errores/)
 static/           estilos, Bootstrap y fuentes alojados en el propio sitio (sin CDN)
 Dockerfile, docker-compose.yml, Caddyfile, docker/    publicación con HTTPS automático
-scripts/          backup.sh y utilidades manuales
+herramientas/     backup.sh y utilidades manuales
 docs/             ONLINE.md (publicar) y MAILS.md (mails y recordatorios)
 tests/            pytest
 ```
