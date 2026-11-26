@@ -339,9 +339,9 @@ def revisar_configuracion():
         sitio = ajustes_sitio()
         faltan = [n for n in ("legal_titular", "legal_cuit", "legal_domicilio") if not sitio.get(n)]
         agregar("ok" if not faltan else "aviso",
-                "Datos legales completos." if not faltan else "Faltan datos legales en Administración → Sitio (titular, CUIT, domicilio).")
+                "Datos legales completos." if not faltan else "Faltan datos legales en Administración → Contenido del sitio (titular, CUIT, domicilio).")
         agregar("ok" if contacto_email() else "aviso",
-                "Email de contacto definido." if contacto_email() else "Falta el email de contacto (Administración → Sitio).")
+                "Email de contacto definido." if contacto_email() else "Falta el email de contacto (Administración → Contenido del sitio).")
     except Exception:
         pass
 
