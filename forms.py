@@ -6,6 +6,7 @@ from wtforms import (
     EmailField,
     IntegerField,
     PasswordField,
+    SelectField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -86,6 +87,8 @@ class ClaseForm(FlaskForm):
         "Orden en el curso",
         validators=[Optional(), NumberRange(min=0, max=9999)]
     )
+    # Las opciones las carga la vista con los módulos del curso; 0 = sin módulo
+    modulo_id = SelectField("Módulo", coerce=int, default=0, validate_choice=False)
     fecha = StringField(
         "Fecha y hora en vivo (hora de Argentina)",
         validators=[Optional(), Length(max=16)]
@@ -101,6 +104,33 @@ class ClaseForm(FlaskForm):
     publicada = BooleanField("Visible para los alumnos", default=True)
     avisar = BooleanField("Avisar por mail a los alumnos del curso al guardar")
     enviar = SubmitField("Guardar clase")
+
+
+class ModuloForm(FlaskForm):
+    titulo = StringField(
+        "Nombre del módulo",
+        validators=[DataRequired(), Length(min=2, max=160)],
+        description="Por ejemplo: «Módulo 1 · Fundamentos tácticos»."
+    )
+    descripcion = TextAreaField("Descripción (opcional)", validators=[Optional(), Length(max=500)])
+    orden = IntegerField("Orden en el curso", validators=[Optional(), NumberRange(min=0, max=9999)])
+    enviar = SubmitField("Guardar módulo")
+
+
+class ParteForm(FlaskForm):
+    titulo = StringField(
+        "Título de la parte",
+        validators=[DataRequired(), Length(min=2, max=160)],
+        description="Por ejemplo: «Parte 1 · Presión tras pérdida»."
+    )
+    video_url = StringField(
+        "Link del video",
+        validators=[Optional(), Length(max=300), url_http],
+        description="YouTube, Vimeo o Google Drive se ven dentro de la web; otros links se abren aparte."
+    )
+    duracion_min = IntegerField("Duración en minutos (opcional)", validators=[Optional(), NumberRange(min=1, max=999)])
+    orden = IntegerField("Orden en la clase", validators=[Optional(), NumberRange(min=0, max=9999)])
+    enviar = SubmitField("Guardar parte")
 
 
 IMAGENES_PERMITIDAS = ["jpg", "jpeg", "png", "webp", "gif"]

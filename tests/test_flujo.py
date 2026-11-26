@@ -41,8 +41,11 @@ def test_flujo_completo_registro_pago_y_acceso(cliente_alumno, curso, mp):
 
     r = cliente_alumno.get(f"/curso/{curso}")
     assert r.status_code == 200
-    assert b"meet.google.com/abc-defg-hij" in r.data and b"drive.google.com/grabacion" in r.data
+    assert b"meet.google.com/abc-defg-hij" in r.data
     assert b"hora de Argentina" in r.data
+    # La grabación se ve en la página de la clase (Drive sin /file/d/: se abre aparte)
+    r = cliente_alumno.get(f"/curso/{curso}/clase/1")
+    assert r.status_code == 200 and b"drive.google.com/grabacion" in r.data
     assert b"Entrar al curso" in cliente_alumno.get("/mis-inscripciones").data
 
 

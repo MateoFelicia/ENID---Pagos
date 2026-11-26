@@ -48,7 +48,7 @@ Después, desde la web: **Administración → Cursos y clases** (cargá los curs
 
 ### 5. Mantenimiento
 - **Actualizar:** `git pull && docker compose up -d --build` (las migraciones corren solas).
-- **Backups diarios:** `crontab -e` y agregá `0 4 * * * cd /ruta/a/enid && scripts/backup.sh /ruta/backups 14`. Copiá la carpeta de backups a otro lugar (tu computadora, un bucket): una copia en el mismo servidor no te salva si el servidor se pierde.
+- **Backups diarios:** `crontab -e` y agregá `0 4 * * * cd /ruta/a/enid && herramientas/backup.sh /ruta/backups 14`. Copiá la carpeta de backups a otro lugar (tu computadora, un bucket): una copia en el mismo servidor no te salva si el servidor se pierde.
 - **Restaurar:** `gunzip -c backups/enid-AAAAMMDD-HHMMSS.sql.gz | docker compose exec -T db psql -U enid enid` (sobre una base vacía). Probalo una vez antes de necesitarlo.
 - **Monitoreo:** registrá `https://tu-dominio/salud` en un servicio de monitoreo gratuito (UptimeRobot o similar): responde 200 si la web y la base andan.
 - **Logs:** `docker compose logs -f web`.

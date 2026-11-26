@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ clase.titulo }} · {{ curso.nombre }} | ENID{% endblock %}
+
+{% macro barra(avance, alto='6px') -%}
+<div class="progress progreso-enid" role="progressbar" aria-label="Progreso" aria-valuenow="{{ avance.porcentaje }}"
+    aria-valuemin="0" aria-valuemax="100" style="height: {{ alto }};">
+    <div class="progress-bar" style="width: {{ avance.porcentaje }}%"></div>
+</div>
+{%- endmacro %}
+
+{# Formulario de "marcar como vista" (parte o clase entera) #}
+{% macro boton_visto(parte=None) -%}
+{% set clave = (clase.id, parte.id if parte else None) %}
+{% set hecho = clave in hechos %}
+<form method="POST" action="{{ url_for('aula.marcar_visto', curso_id=curso.id, clase_id=clase.id) }}" class="d-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if parte %}<input type="hidden" name="parte_id" value="{{ parte.id }}">{% endif %}
+    <input type="hidden" name="visto" value="{{ '0' if hecho else '1' }}">
+    {% if hecho %}
+    <button type="submit" class="btn btn-success fw-bold">✓ Vista · desmarcar</button>
+    {% else %}
+    <button type="submit" class="btn btn-danger fw-bold">Marcar como vista{% if parte and parte.id != clase.partes[-1].id %} y seguir{% endif %}</button>
+    {% endif %}
+</form>
+{%- endmacro %}
+
+{% block content %}
+{% set estado = clase.estado(ahora) %}
+<section class="container py-4">
+    <nav aria-label="Ubicación" class="mb-3">
+        <a href="{{ url_for('ver_curso', curso_id=curso.id) }}" class="link-secondary small fw-semibold">← {{ curso.nombre }}</a>
+    </nav>
+
+    <div class="row g-4">
+        {# ------------------------------------------------ reproductor #}
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow overflow-hidden">
+                {% if embed %}
+                <div class="ratio ratio-16x9 bg-black">
+                    <iframe src="{{ embed }}" title="{{ parte.titulo if parte else clase.titulo }}"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                </div>
+                {% elif video %}
+                <div class="ratio ratio-16x9 bg-dark d-flex">
+                    <div class="d-flex flex-column align-items-center justify-content-center text-white text-center p-4">
+                        <p class="mb-3">Este video se abre en otra pestaña.</p>
+                        <a href="{{ video }}" target="_blank" rel="noopener noreferrer" class="btn btn-light fw-bold">Ver el video</a>
+                    </div>
+                </div>
+                {% elif estado in ('proxima', 'en_curso') %}
+                <div class="ratio ratio-16x9" style="background:#b71c1c;">
+                    <div class="d-flex flex-column align-items-center justify-content-center text-white text-center p-4">
+                        <p class="text-uppercase fw-bold small mb-1">{% if estado == 'en_curso' %}En vivo ahora{% else %}Clase en vivo{% endif %}</p>
+                        <p class="h4 fw-bold mb-3">{{ clase.fecha | fecha_ar if clase.fecha else '' }}</p>
+                        <a href="{{ clase.meet_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-light fw-bold">Entrar a la clase en vivo</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="ratio ratio-16x9 bg-dark">
+                    <div class="d-flex align-items-center justify-content-center text-white-50 p-4 text-center">
+                        {% if estado == 'esperando_grabacion' %}La grabación se publicará pronto.{% else %}El contenido se habilitará próximamente.{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="p-4">
+                    {% if parte %}<p class="text-danger fw-bold small text-uppercase mb-1">{{ clase.titulo }}</p>{% endif %}
+                    <h1 class="h3 fw-bold mb-2">{{ parte.titulo if parte else clase.titulo }}</h1>
+                    {% if clase.descripcion %}<p class="text-secondary">{{ clase.descripcion }}</p>{% endif %}
+
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                        {{ boton_visto(parte) if parte else boton_visto() }}
+                        {% if siguiente %}
+                        <a href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=siguiente.id) }}" class="btn btn-outline-dark ms-auto">Siguiente clase →</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ------------------------------------------------ lista lateral #}
+        <div class="col-12 col-lg-4">
+            {% if clase.partes %}
+            <div class="bg-white text-dark rounded-4 shadow p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-baseline px-1 mb-1">
+                    <h2 class="h6 fw-bold mb-0">Partes de esta clase</h2>
+                    <span class="small text-secondary">{{ avance.hechas }}/{{ avance.total }}</span>
+                </div>
+                <div class="px-1 mb-2">{{ barra(avance) }}</div>
+                <ol class="list-unstyled mb-0 lista-partes">
+                    {% for p in clase.partes %}
+                    {% set visto = (clase.id, p.id) in hechos %}
+                    <li>
+                        <a href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=clase.id, parte=p.id) }}"
+                            class="d-flex gap-2 align-items-start rounded-3 p-2 text-decoration-none text-dark {{ 'activa' if parte and p.id == parte.id }}"
+                            {% if parte and p.id == parte.id %}aria-current="true"{% endif %}>
+                            <span class="numero {{ 'vista' if visto }}">{% if visto %}✓{% else %}{{ loop.index }}{% endif %}</span>
+                            <span class="flex-grow-1">
+                                <span class="d-block small fw-semibold">{{ p.titulo }}</span>
+                                {% if p.duracion_min %}<span class="d-block small text-secondary">{{ p.duracion_min }} min</span>{% endif %}
+                            </span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            <div class="bg-white text-dark rounded-4 shadow p-3">
+                <div class="d-flex justify-content-between align-items-baseline px-1 mb-1">
+                    <h2 class="h6 fw-bold mb-0">Contenido del curso</h2>
+                    <span class="small text-secondary">{{ total.porcentaje }}%</span>
+                </div>
+                <div class="px-1 mb-3">{{ barra(total) }}</div>
+                {% for grupo in grupos %}
+                {% if grupo.modulo or grupos | length > 1 %}
+                <p class="small fw-bold text-uppercase text-secondary px-1 mb-1 mt-2">
+                    {{ grupo.titulo }} · {{ grupo.avance.porcentaje }}%
+                </p>
+                {% endif %}
+                <ul class="list-unstyled mb-2 lista-partes">
+                    {% for c in grupo.clases %}
+                    {% set av = por_clase[c.id] %}
+                    <li>
+                        <a href="{{ url_for('aula.ver_clase', curso_id=curso.id, clase_id=c.id) }}"
+                            class="d-flex gap-2 align-items-center rounded-3 p-2 text-decoration-none text-dark {{ 'activa' if c.id == clase.id }}">
+                            <span class="numero {{ 'vista' if av.completo }}">{% if av.completo %}✓{% else %}{{ av.porcentaje }}%{% endif %}</span>
+                            <span class="small fw-semibold">{{ c.titulo }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

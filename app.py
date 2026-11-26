@@ -36,6 +36,7 @@ from mercadopago.webhook import (
 from sqlalchemy.orm import selectinload
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+import aula
 import gestion
 import sitio
 from avisos import avisar
@@ -64,6 +65,7 @@ from models import (
     Usuario,
     ahora_argentina,
 )
+from progreso import armar_aula, vistos
 from utils import (
     admin_required,
     destino_seguro,
@@ -145,6 +147,7 @@ login_manager.login_message_category = "warning"
 
 app.register_blueprint(sitio.bp)
 app.register_blueprint(gestion.bp)
+app.register_blueprint(aula.bp)
 
 @app.template_filter("fecha_ar")
 def fecha_ar(fecha):
@@ -576,8 +579,14 @@ def _guardar_clase(clase, form):
     clase.meet_link = (form.meet_link.data or "").strip() or None
     clase.grabacion = (form.grabacion.data or "").strip() or None
     clase.publicada = form.publicada.data
+    ids_modulos = {m.id for m in clase.curso.modulos}
+    clase.modulo_id = form.modulo_id.data if form.modulo_id.data in ids_modulos else None
     if form.orden.data is not None:
         clase.orden = form.orden.data
+
+
+def _opciones_modulo(form, curso):
+    form.modulo_id.choices = [(0, "Sin módulo")] + [(m.id, m.titulo) for m in curso.modulos]
 
 
 def _avisar_a_alumnos(clase, tipo):
@@ -614,9 +623,12 @@ def nueva_clase(curso_id):
         abort(404)
 
     form = ClaseForm()
+    _opciones_modulo(form, curso)
     siguiente_orden = max((c.orden for c in curso.clases), default=0) + 1
     if request.method == "GET":
         form.orden.data = siguiente_orden
+        # ?modulo=ID desde el botón "Agregar clase" de un módulo
+        form.modulo_id.data = request.args.get("modulo", 0, type=int)
 
     if form.validate_on_submit():
         clase = Clase(curso=curso, orden=siguiente_orden)
@@ -639,6 +651,9 @@ def editar_clase(clase_id):
         abort(404)
 
     form = ClaseForm(obj=clase)
+    _opciones_modulo(form, clase.curso)
+    if request.method == "GET":
+        form.modulo_id.data = clase.modulo_id or 0
     if request.method == "GET" and clase.fecha:
         # El input datetime-local solo entiende este formato
         form.fecha.data = clase.fecha.strftime("%Y-%m-%dT%H:%M")
@@ -769,8 +784,13 @@ def ver_curso(curso_id):
         key=lambda c: c.fecha,
         default=None,
     )
+    hechos = vistos(current_user, curso)
+    grupos, por_clase, total = armar_aula(curso, clases, hechos)
+    # "Seguir viendo": la primera clase que no está completa
+    continuar = next((c for g in grupos for c in g.clases if not por_clase[c.id].completo), None)
     return render_template(
-        "curso_detalle.html", curso=curso, clases=clases, proxima=proxima, ahora=ahora
+        "curso_detalle.html", curso=curso, clases=clases, proxima=proxima, ahora=ahora,
+        grupos=grupos, por_clase=por_clase, total=total, continuar=continuar,
     )
 
 
