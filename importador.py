@@ -37,6 +37,43 @@ MEDIOS = {
 PLANTILLA = "nombre,email,cursos,medio,nota\nAna Pérez,ana@ejemplo.com,Curso Básico,transferencia,Pagó el 12/10\nLuis Gómez,luis@ejemplo.com,todos,beca,Hijo de un amigo\n"
 
 
+_EMAIL_EN_LINEA = re.compile(r"[^\s<>,;]+@[^\s<>,;]+\.[^\s<>,;]+")
+
+
+def _nombre_desde_email(email):
+    """juan.perez_99@gmail.com → «Juan Perez» (el alumno lo puede corregir después)."""
+    local = email.split("@", 1)[0]
+    partes = [p for p in re.split(r"[._\-+]+", re.sub(r"\d+", " ", local)) if p.strip()]
+    return " ".join(p.strip().capitalize() for p in partes) or local
+
+
+def csv_desde_lista(texto, cursos, medio=""):
+    """Convierte una lista pegada (un alumno por línea) en el CSV que entiende `parsear`.
+
+    Acepta líneas como «ana@mail.com», «Ana Pérez <ana@mail.com>», «Ana Pérez, ana@mail.com»
+    o «ana@mail.com, Ana Pérez» (también con tabulaciones, como al copiar de Excel).
+    Las líneas sin email se pasan igual para que la vista previa las marque como error.
+    """
+    salida = io.StringIO()
+    escritor = csv.writer(salida)
+    escritor.writerow(["nombre", "email", "cursos", "medio"])
+    nombres_cursos = "|".join(c.nombre for c in cursos)
+    for linea in (texto or "").splitlines():
+        linea = linea.strip()
+        if not linea:
+            continue
+        hallado = _EMAIL_EN_LINEA.search(linea)
+        if hallado is None:
+            escritor.writerow([linea[:120], "", nombres_cursos, medio])
+            continue
+        email = hallado.group(0)
+        resto = (linea[:hallado.start()] + " " + linea[hallado.end():])
+        nombre = re.sub(r"[<>,;\t\"]+", " ", resto)
+        nombre = re.sub(r"\s+", " ", nombre).strip() or _nombre_desde_email(email)
+        escritor.writerow([nombre, email, nombres_cursos, medio])
+    return salida.getvalue()
+
+
 def normalizar(texto):
     texto = unicodedata.normalize("NFKD", texto or "")
     texto = "".join(c for c in texto if not unicodedata.combining(c))

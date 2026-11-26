@@ -33,7 +33,7 @@ from emailer import (
 )
 from extensions import csrf, limiter
 from forms import CambiarPasswordForm, MiCuentaForm
-from importador import MAX_BYTES, PLANTILLA, aplicar, decodificar, parsear, planificar
+from importador import MAX_BYTES, PLANTILLA, aplicar, csv_desde_lista, decodificar, parsear, planificar
 from models import Curso, Usuario
 from utils import admin_required
 
@@ -112,7 +112,18 @@ def importar_alumnos():
         return render_template("admin/importar.html", cursos=cursos, fase="subir")
 
     accion = request.form.get("accion")
-    if accion == "previsualizar":
+    if accion == "previsualizar" and "lista" in request.form:
+        # Lista de mails pegada: se arma el mismo CSV y sigue el camino de siempre (vista previa → confirmar)
+        elegidos = {int(i) for i in request.form.getlist("curso_ids") if i.isdigit()}
+        cursos_lista = [c for c in cursos if c.id in elegidos]
+        if not cursos_lista:
+            flash("Elegí al menos un curso para dar acceso.", "warning")
+            return render_template("admin/importar.html", cursos=cursos, fase="subir",
+                                   lista=request.form.get("lista", ""))
+        texto = csv_desde_lista(request.form.get("lista", ""), cursos_lista, request.form.get("medio", ""))
+        if len(texto.encode("utf-8")) > MAX_BYTES:
+            abort(413)
+    elif accion == "previsualizar":
         archivo = request.files.get("archivo")
         if not archivo or not archivo.filename:
             flash("Elegí un archivo CSV.", "warning")
