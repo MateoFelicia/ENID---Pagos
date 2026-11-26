@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Biblioteca | ENID{% endblock %}
+{% block descripcion %}Libros recomendados por ENID para entrenadores y amantes del fútbol.{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <span class="icono-tema">{{ icono("libro", 34) }}</span>
+        <p class="text-danger fw-bold text-uppercase mb-2">Biblioteca</p>
+        <h1 class="display-5 fw-bold mb-2">Libros que recomendamos</h1>
+        <p class="text-secondary mb-0">Lecturas para entrenadores. Los compás en Mercado Libre y te llegan a tu casa.</p>
+    </div>
+
+    {% if temas %}
+    <nav class="d-flex flex-wrap justify-content-center gap-2 mb-4" aria-label="Temas">
+        <a class="btn btn-sm {{ 'btn-dark' if not tema else 'btn-outline-dark' }}" href="{{ url_for('recursos.biblioteca') }}">Todos</a>
+        {% for t in temas %}
+        <a class="btn btn-sm {{ 'btn-dark' if tema and tema.lower() == t.lower() else 'btn-outline-dark' }}"
+            href="{{ url_for('recursos.biblioteca', tema=t) }}">{{ t }}</a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for libro in libros %}
+        <div class="col-sm-6 col-lg-4 col-xl-3">
+            <article class="tarjeta-libro">
+                <div class="tarjeta-libro-tapa">
+                    {% if libro.imagen_id %}
+                    <img src="{{ url_for('sitio.media', imagen_id=libro.imagen_id) }}" alt="Tapa de {{ libro.titulo }}" loading="lazy">
+                    {% else %}
+                    <span aria-hidden="true">{{ icono("libro", 48) }}</span>
+                    {% endif %}
+                </div>
+                <div class="p-3 d-flex flex-column flex-grow-1">
+                    {% if libro.tema %}<p class="tarjeta-noticia-fecha mb-1">{{ libro.tema | upper }}</p>{% endif %}
+                    <h2 class="h6 fw-bold mb-1">{{ libro.titulo }}</h2>
+                    {% if libro.autor %}<p class="small text-secondary mb-2">{{ libro.autor }}</p>{% endif %}
+                    {% if libro.descripcion %}<p class="small mb-3">{{ libro.descripcion }}</p>{% endif %}
+                    <a class="btn btn-ml mt-auto" href="{{ libro.url }}" target="_blank" rel="noopener noreferrer nofollow">
+                        {{ 'Comprar en Mercado Libre' if es_mercado_libre(libro.url) else 'Ver dónde comprarlo' }}</a>
+                </div>
+            </article>
+        </div>
+        {% else %}
+        <p class="text-center text-secondary">Estamos armando la biblioteca. Volvé pronto.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

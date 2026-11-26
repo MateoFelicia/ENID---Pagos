@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Podcasts | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="display-6 fw-bold mb-0">Podcasts</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" href="{{ url_for('recursos.podcasts') }}">Ver la página</a>
+            <a class="btn btn-danger" href="{{ url_for('recursos.editar_episodio') }}">Nuevo episodio</a>
+        </div>
+    </div>
+    <div class="bg-white rounded-4 shadow-sm">
+        {% for e in episodios %}
+        <div class="d-flex flex-wrap gap-3 align-items-center p-3 {{ '' if loop.last else 'border-bottom' }} {{ '' if e.visible else 'opacity-50' }}">
+            <div class="flex-grow-1" style="min-width: 220px">
+                <strong>{{ e.titulo }}</strong>
+                {% if not e.visible %}<span class="badge text-bg-secondary ms-1">oculto</span>{% endif %}
+                <div class="small text-secondary">{{ e.fecha | dia }} · {{ plataforma_podcast(e.url) }}{% if not reproductor_podcast(e.url) %} (se abre aparte){% endif %}</div>
+            </div>
+            <a class="btn btn-sm btn-outline-dark" href="{{ url_for('recursos.editar_episodio', episodio_id=e.id) }}">Editar</a>
+            <form method="POST" action="{{ url_for('recursos.eliminar_episodio', episodio_id=e.id) }}" onsubmit="return confirm('¿Eliminar este episodio?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+            </form>
+        </div>
+        {% else %}
+        <p class="text-secondary p-4 mb-0">Todavía no hay episodios. Pegá el link de YouTube o Spotify de cada uno.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

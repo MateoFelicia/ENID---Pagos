@@ -327,6 +327,35 @@
     </script>
     {% endif %}
 
+    {% if recursos_gratis.podcasts or recursos_gratis.libros %}
+    <section class="py-5 seccion-gris" id="recursos">
+        <div class="container py-lg-4">
+            <p class="seccion-etiqueta">GRATIS PARA TODOS</p>
+            <h2 class="titulo-seccion">SEGUÍ APRENDIENDO.</h2>
+            <div class="row g-4 mt-2">
+                {% if recursos_gratis.podcasts %}
+                <div class="col-md-6">
+                    <a class="tarjeta-recurso" href="{{ url_for('recursos.podcasts') }}">
+                        <span class="modalidad-icono">{{ icono("podcast") }}</span>
+                        <span><strong>Podcasts</strong>
+                        <span class="d-block">{{ recursos_gratis.podcasts }} episodio{{ '' if recursos_gratis.podcasts == 1 else 's' }} sobre fútbol y formación de entrenadores.</span></span>
+                    </a>
+                </div>
+                {% endif %}
+                {% if recursos_gratis.libros %}
+                <div class="col-md-6">
+                    <a class="tarjeta-recurso" href="{{ url_for('recursos.biblioteca') }}">
+                        <span class="modalidad-icono">{{ icono("libro") }}</span>
+                        <span><strong>Biblioteca</strong>
+                        <span class="d-block">{{ recursos_gratis.libros }} libro{{ '' if recursos_gratis.libros == 1 else 's' }} que recomendamos, con link para comprarlos.</span></span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <section class="py-5 borde-superior" id="novedades">
         <div class="container py-lg-4">
             <div class="row g-4 align-items-end mb-4">

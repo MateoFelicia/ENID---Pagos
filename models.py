@@ -487,3 +487,37 @@ class Suscriptor(db.Model):
     @property
     def activo(self):
         return self.confirmado and self.baja_en is None
+
+
+# ---------------------------------------------------------------------------
+# Recursos gratis: podcasts y biblioteca
+# ---------------------------------------------------------------------------
+
+class Episodio(db.Model):
+    """Episodio de podcast gratis (link a YouTube, Spotify u otra plataforma)."""
+    __tablename__ = "episodios"
+
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(160), nullable=False)
+    descripcion = db.Column(db.String(1000))
+    url = db.Column(db.String(300), nullable=False)
+    duracion_min = db.Column(db.Integer)
+    fecha = db.Column(db.Date)
+    visible = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+
+
+class Libro(db.Model):
+    """Libro recomendado, con link para comprarlo (Mercado Libre)."""
+    __tablename__ = "libros"
+
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(160), nullable=False)
+    autor = db.Column(db.String(160))
+    tema = db.Column(db.String(60))
+    descripcion = db.Column(db.String(600))
+    url = db.Column(db.String(500), nullable=False)
+    imagen_id = db.Column(db.Integer, db.ForeignKey("imagenes.id"))
+    orden = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+    visible = db.Column(db.Boolean, nullable=False, default=True, server_default=db.true())
+
+    imagen = db.relationship("Imagen")

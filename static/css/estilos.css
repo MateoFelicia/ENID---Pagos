@@ -857,3 +857,94 @@ body {
     line-height: 1.8;
     white-space: pre-line;
 }
+
+/* ---------- Podcasts y biblioteca ---------- */
+
+.navbar .dropdown-item .icono {
+    margin-right: 0.35rem;
+    color: var(--rojo);
+}
+
+.episodio {
+    padding: 1.75rem 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.episodio-spotify {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+}
+
+.episodio .btn .icono,
+.tarjeta-libro .icono {
+    vertical-align: -3px;
+}
+
+.tarjeta-libro {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid #e8e8e8;
+    border-radius: 0.5rem;
+    background: white;
+}
+
+.tarjeta-libro-tapa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    padding: 1rem;
+    color: var(--rojo);
+    background: var(--gris-claro);
+}
+
+.tarjeta-libro-tapa img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Amarillo de Mercado Libre para que se reconozca de un vistazo */
+.btn-ml {
+    border: 0;
+    color: #2d3277;
+    background: #ffe600;
+    font-weight: 700;
+}
+
+.btn-ml:hover,
+.btn-ml:focus-visible {
+    color: #2d3277;
+    background: #f5dc00;
+}
+
+.tarjeta-recurso {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    height: 100%;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    color: var(--negro);
+    background: white;
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.tarjeta-recurso:hover {
+    transform: translateY(-4px);
+    color: var(--negro);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+}
+
+.tarjeta-recurso strong {
+    font-size: 1.15rem;
+}
+
+.tarjeta-recurso .d-block {
+    color: #6b6b6b;
+}

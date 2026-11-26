@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Biblioteca | ENID{% endblock %}
+{% block content %}
+<section class="container py-5">
+    <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="display-6 fw-bold mb-0">Biblioteca</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-dark" href="{{ url_for('recursos.biblioteca') }}">Ver la página</a>
+            <a class="btn btn-danger" href="{{ url_for('recursos.editar_libro') }}">Agregar libro</a>
+        </div>
+    </div>
+    <div class="bg-white rounded-4 shadow-sm">
+        {% for libro in libros %}
+        <div class="d-flex flex-wrap gap-3 align-items-center p-3 {{ '' if loop.last else 'border-bottom' }} {{ '' if libro.visible else 'opacity-50' }}">
+            {% if libro.imagen_id %}<img src="{{ url_for('sitio.media', imagen_id=libro.imagen_id) }}" alt="" width="44" height="60" style="object-fit:cover" class="rounded">{% endif %}
+            <div class="flex-grow-1" style="min-width: 220px">
+                <strong>{{ libro.titulo }}</strong>{% if libro.autor %} <span class="text-secondary">· {{ libro.autor }}</span>{% endif %}
+                {% if not libro.visible %}<span class="badge text-bg-secondary ms-1">oculto</span>{% endif %}
+                <div class="small text-secondary">{{ libro.tema or 'Sin tema' }} · {% if es_mercado_libre(libro.url) %}Mercado Libre{% else %}<span class="text-warning-emphasis">link que no es de Mercado Libre</span>{% endif %}</div>
+            </div>
+            <a class="btn btn-sm btn-outline-dark" href="{{ url_for('recursos.editar_libro', libro_id=libro.id) }}">Editar</a>
+            <form method="POST" action="{{ url_for('recursos.eliminar_libro', libro_id=libro.id) }}" onsubmit="return confirm('¿Eliminar este libro?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+            </form>
+        </div>
+        {% else %}
+        <p class="text-secondary p-4 mb-0">Todavía no hay libros. Buscá el libro en Mercado Libre, copiá el link de la publicación y pegalo acá.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

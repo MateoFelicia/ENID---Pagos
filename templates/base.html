@@ -47,8 +47,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('profes.listado') }}">Profes</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('noticias.listado') }}">Noticias</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">Recursos</a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{{ url_for('noticias.listado') }}">{{ icono("noticias", 18) }} Noticias</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('recursos.podcasts') }}">{{ icono("podcast", 18) }} Podcasts gratis</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('recursos.biblioteca') }}">{{ icono("libro", 18) }} Biblioteca</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="btn btn-danger btn-inscripcion" href="{{ url_for('inicio') }}#precio">INSCRIBIRME</a>
@@ -79,6 +85,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('gestion.importar_alumnos') }}">Dar acceso a varios (lista o CSV)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sitio.admin_sitio') }}">Contenido del sitio</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('noticias.administrar') }}">Noticias y newsletter</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('recursos.admin_podcasts') }}">Podcasts</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('recursos.admin_biblioteca') }}">Biblioteca</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sitio.admin_arrepentimientos') }}">Arrepentimientos</a></li>
                         </ul>
                     </li>
@@ -150,6 +158,8 @@
                         <li><a href="{{ url_for('inicio') }}#propuesta">La propuesta</a></li>
                         <li><a href="{{ url_for('inicio') }}#precio">Cursos</a></li>
                         <li><a href="{{ url_for('noticias.listado') }}">Noticias</a></li>
+                        <li><a href="{{ url_for('recursos.podcasts') }}">Podcasts gratis</a></li>
+                        <li><a href="{{ url_for('recursos.biblioteca') }}">Biblioteca</a></li>
                         <li><a href="{{ url_for('profes.listado') }}">Profes</a></li>
                         <li><a href="{{ url_for('inicio') }}#preguntas">Preguntas frecuentes</a></li>
                         {% if current_user.is_authenticated %}

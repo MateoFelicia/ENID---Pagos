@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
 from wtforms import (
     BooleanField,
+    DateField,
     DecimalField,
     EmailField,
     IntegerField,
@@ -271,3 +272,35 @@ class NoticiaForm(FlaskForm):
     quitar_foto = BooleanField("Quitar la imagen actual")
     publicada = BooleanField("Publicada (visible en la web)", default=True)
     enviar = SubmitField("Guardar noticia")
+
+
+class EpisodioForm(FlaskForm):
+    titulo = StringField("Título del episodio", validators=[DataRequired(), Length(max=160)])
+    url = StringField(
+        "Link del episodio", validators=[DataRequired(), Length(max=300), url_http],
+        description="YouTube o Spotify se escuchan dentro de la web; otros links (iVoox, Apple, etc.) se abren aparte."
+    )
+    descripcion = TextAreaField("De qué se habla (opcional)", validators=[Optional(), Length(max=1000)])
+    duracion_min = IntegerField("Duración en minutos (opcional)", validators=[Optional(), NumberRange(min=1, max=999)])
+    fecha = DateField("Fecha (opcional)", validators=[Optional()])
+    visible = BooleanField("Visible en la web", default=True)
+    enviar = SubmitField("Guardar episodio")
+
+
+class LibroForm(FlaskForm):
+    titulo = StringField("Título", validators=[DataRequired(), Length(max=160)])
+    autor = StringField("Autor (opcional)", validators=[Optional(), Length(max=160)])
+    tema = StringField(
+        "Tema (opcional)", validators=[Optional(), Length(max=60)],
+        description="Agrupa los libros: «Táctica», «Psicología», «Preparación física»…"
+    )
+    url = StringField(
+        "Link para comprarlo", validators=[DataRequired(), Length(max=500), url_http],
+        description="Pegá el link de la publicación de Mercado Libre."
+    )
+    descripcion = TextAreaField("Por qué lo recomendamos (opcional)", validators=[Optional(), Length(max=600)])
+    foto = FileField("Tapa (opcional)", validators=[Optional(), _solo_imagenes])
+    quitar_foto = BooleanField("Quitar la tapa actual")
+    orden = IntegerField("Orden", validators=[Optional(), NumberRange(min=0, max=9999)])
+    visible = BooleanField("Visible en la web", default=True)
+    enviar = SubmitField("Guardar libro")
