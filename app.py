@@ -40,6 +40,7 @@ import aula
 import membresia
 import profes
 import gestion
+import iconos
 import sitio
 from avisos import avisar
 from db import db
@@ -67,7 +68,7 @@ from models import (
     Usuario,
     ahora_argentina,
 )
-from progreso import armar_aula, vistos
+from progreso import armar_aula, resumen_curso, vistos
 from utils import (
     admin_required,
     destino_seguro,
@@ -155,6 +156,9 @@ app.register_blueprint(gestion.bp)
 app.register_blueprint(aula.bp)
 app.register_blueprint(profes.bp)
 app.register_blueprint(membresia.bp)
+
+# Íconos SVG en línea y la ficha corta de cada curso (módulos, clases, minutos), para las plantillas
+app.jinja_env.globals.update(icono=iconos.icono, iconos_temas=iconos.ICONOS_TEMAS, resumen_curso=resumen_curso)
 
 @app.template_filter("fecha_ar")
 def fecha_ar(fecha):

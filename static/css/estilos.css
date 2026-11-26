@@ -636,3 +636,120 @@ body {
     height: auto;
     border-top-color: #f5b301;
 }
+
+/* ---------- Íconos de la portada ---------- */
+
+.icono {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.icono-tema {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    margin-bottom: 1.25rem;
+    border-radius: 50%;
+    color: var(--rojo);
+    background: rgba(217, 4, 41, 0.08);
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.tarjeta-propuesta:hover .icono-tema {
+    color: white;
+    background: var(--rojo);
+}
+
+.lista-modalidades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 1.75rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.modalidad {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.modalidad-icono {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border: 2px solid var(--rojo);
+    border-radius: 0.75rem;
+    color: var(--rojo);
+    background: white;
+}
+
+.modalidad h3 {
+    margin: 0.15rem 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.modalidad p {
+    margin: 0;
+    color: #6b6b6b;
+    line-height: 1.55;
+}
+
+.borde-superior {
+    border-top: 1px solid #e8e8e8;
+}
+
+.ficha-curso {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0.25rem 0 1rem;
+    padding: 0;
+    color: #444;
+    font-size: 0.9rem;
+    list-style: none;
+}
+
+.ficha-curso li {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.ficha-curso .icono {
+    color: var(--rojo);
+}
+
+.ficha-curso .ficha-profes {
+    flex-basis: 100%;
+}
+
+.galeria-iconos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.galeria-iconos li {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #e3e3e3;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+}
+
+.galeria-iconos .icono {
+    color: var(--rojo);
+}

@@ -154,3 +154,39 @@ def marcar(usuario, clase, parte=None, visto=True):
     elif not visto and fila is not None:
         db.session.delete(fila)
     db.session.commit()
+
+
+# ---------------------------------------------------------------- ficha del curso
+
+@dataclass
+class ResumenCurso:
+    """Lo que la tarjeta del catálogo cuenta del curso con íconos."""
+    modulos: int = 0
+    clases: int = 0
+    videos: int = 0
+    minutos: int = 0
+    en_vivo: bool = False
+
+    @property
+    def duracion(self):
+        """«45 min», «3 h», «3 h 20 min»; vacío si nadie cargó duraciones."""
+        if not self.minutos:
+            return ""
+        horas, minutos = divmod(self.minutos, 60)
+        if not horas:
+            return f"{minutos} min"
+        return f"{horas} h {minutos} min" if minutos else f"{horas} h"
+
+
+def resumen_curso(curso):
+    """Cuenta solo lo publicado: es lo que el alumno va a encontrar al entrar."""
+    clases = [c for c in curso.clases if c.publicada]
+    ids_modulos = {m.id for m in curso.modulos}
+    partes = [p for c in clases for p in c.partes]
+    return ResumenCurso(
+        modulos=len({c.modulo_id for c in clases if c.modulo_id in ids_modulos}),
+        clases=len(clases),
+        videos=len(partes),
+        minutos=sum(p.duracion_min or 0 for p in partes),
+        en_vivo=any(c.meet_link for c in clases),
+    )

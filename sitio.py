@@ -28,6 +28,7 @@ from db import db
 from emailer import enviar_arrepentimiento
 from extensions import limiter
 from forms import ArrepentimientoForm, AjustesForm, FotoForm, PreguntaForm, TestimonioForm
+from iconos import temas_portada
 from imagenes import ImagenInvalida, procesar_imagen
 from models import (
     Ajuste,
@@ -110,7 +111,8 @@ def contenido_portada():
     lista_preguntas = (
         [(p.pregunta, p.respuesta) for p in preguntas] if hay_propias else PREGUNTAS_BASE
     )
-    return {"testimonios": testimonios, "fotos": fotos, "preguntas": lista_preguntas}
+    return {"testimonios": testimonios, "fotos": fotos, "preguntas": lista_preguntas,
+            "temas": temas_portada(ajustes_sitio().get("temas_portada"))}
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +188,8 @@ def admin_sitio():
         nuevos = {
             clave: getattr(form, clave).data
             for clave in ("entrenador_nombre", "entrenador_titulo", "entrenador_bio", "whatsapp",
-                          "instagram", "email_contacto", "legal_titular", "legal_cuit", "legal_domicilio")
+                          "instagram", "email_contacto", "legal_titular", "legal_cuit", "legal_domicilio",
+                          "temas_portada")
         }
         try:
             for campo_archivo, campo_quitar, clave in (
