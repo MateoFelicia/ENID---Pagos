@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+
+{% block title %}{{ titulo }} | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">{{ "Profesores" if cursos is defined else "Panel del profe" }}</p>
+                <h1 class="h2 fw-bold mb-4">{{ titulo }}</h1>
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+                    {{ campo(form.nombre) }}
+                    {{ campo(form.titulo_profesional) }}
+                    {{ campo(form.bio, rows="6") }}
+                    {% if profe.foto_id %}
+                    <img src="{{ url_for('sitio.media', imagen_id=profe.foto_id) }}" alt="Foto actual"
+                        class="rounded-3 mb-2" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% endif %}
+                    {{ campo(form.foto, accept="image/*") }}
+                    {% if profe.foto_id %}{{ campo(form.quitar_foto) }}{% endif %}
+
+                    {% if cursos is defined %}
+                    <fieldset class="p-3 bg-light rounded-3 mb-4">
+                        <legend class="fs-6 fw-bold">Cursos que dicta</legend>
+                        <p class="small text-secondary">Puede cargar módulos, clases y videos solo en estos cursos, y entra a ellos sin pagar.</p>
+                        {% for curso in cursos %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="curso_ids" value="{{ curso.id }}"
+                                id="curso-{{ curso.id }}" {% if profe.dicta(curso) %}checked{% endif %}>
+                            <label class="form-check-label" for="curso-{{ curso.id }}">{{ curso.nombre }}{% if not curso.activo %} (no disponible){% endif %}</label>
+                        </div>
+                        {% else %}
+                        <p class="small mb-0">Todavía no hay cursos.</p>
+                        {% endfor %}
+                    </fieldset>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        {{ form.enviar(class="btn btn-danger") }}
+                        <a href="{{ url_for('profes.administrar') if cursos is defined else url_for('profes.panel') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

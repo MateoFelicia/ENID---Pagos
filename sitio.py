@@ -36,6 +36,7 @@ from models import (
     Imagen,
     PreguntaFrecuente,
     Testimonio,
+    Usuario,
     ahora_argentina,
 )
 from utils import admin_required
@@ -154,6 +155,7 @@ def _borrar_si_huerfana(imagen_id):
             Ajuste.clave.in_(["entrenador_imagen_id", "portada_imagen_id"]),
             Ajuste.valor == str(imagen_id),
         ).count()
+        + db.session.query(Usuario).filter_by(foto_id=imagen_id).count()
     )
     if usos == 0:
         imagen = db.session.get(Imagen, imagen_id)

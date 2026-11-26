@@ -44,6 +44,9 @@
                         <a class="nav-link" href="{{ url_for('inicio') }}#preguntas">Preguntas</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('profes.listado') }}">Profes</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="btn btn-danger btn-inscripcion" href="{{ url_for('inicio') }}#precio">INSCRIBIRME</a>
                     </li>
 
@@ -51,6 +54,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('mis_inscripciones') }}">Mis cursos</a>
                     </li>
+
+                    {% if current_user.es_profesor %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('profes.panel') }}">Panel del profe</a>
+                    </li>
+                    {% endif %}
 
                     {% if current_user.es_admin %}
                     <li class="nav-item dropdown">
@@ -60,6 +69,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('administrar_usuarios') }}">Alumnos</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('administrar_inscripciones') }}">Inscripciones</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('administrar_cursos') }}">Cursos y clases</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('profes.administrar') }}">Profesores</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('gestion.importar_alumnos') }}">Importar alumnos (CSV)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sitio.admin_sitio') }}">Contenido del sitio</a></li>

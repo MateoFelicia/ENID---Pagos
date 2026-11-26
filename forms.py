@@ -218,3 +218,26 @@ class CambiarPasswordForm(FlaskForm):
         validators=[DataRequired(), EqualTo("nueva", message="Las contraseñas no coinciden.")]
     )
     enviar = SubmitField("Cambiar contraseña")
+
+
+class PerfilProfeForm(FlaskForm):
+    nombre = StringField("Nombre y apellido", validators=[DataRequired(), Length(min=2, max=120)])
+    titulo_profesional = StringField(
+        "Título o especialidad",
+        validators=[Optional(), Length(max=160)],
+        description="Por ejemplo: «Director Técnico Nacional · Preparador físico»."
+    )
+    bio = TextAreaField(
+        "Sobre el profe",
+        validators=[Optional(), Length(max=1500)],
+        description="Trayectoria, clubes, logros. Se muestra en la página de profesores."
+    )
+    foto = FileField("Foto (opcional)", validators=[Optional(), _solo_imagenes])
+    quitar_foto = BooleanField("Quitar la foto actual")
+    enviar = SubmitField("Guardar perfil")
+
+
+class NuevoProfeForm(FlaskForm):
+    nombre = StringField("Nombre y apellido", validators=[DataRequired(), Length(min=2, max=120)])
+    email = EmailField("Email", validators=[DataRequired(), Email(), Length(max=120)])
+    enviar = SubmitField("Agregar profe")

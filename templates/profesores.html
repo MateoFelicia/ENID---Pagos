@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Profesores | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <p class="text-danger fw-bold text-uppercase mb-2">Cuerpo docente</p>
+        <h1 class="display-5 fw-bold mb-2">Nuestros profesores</h1>
+        <p class="text-secondary mb-0">Entrenadores y especialistas que te acompañan en cada curso.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for profe in profes %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="bg-white text-dark rounded-4 shadow h-100 overflow-hidden tarjeta-profe">
+                {% if profe.foto_id %}
+                <img src="{{ url_for('sitio.media', imagen_id=profe.foto_id) }}" alt="Foto de {{ profe.nombre }}"
+                    class="w-100 foto-profe" loading="lazy">
+                {% else %}
+                <div class="foto-profe foto-profe-vacia d-flex align-items-center justify-content-center" aria-hidden="true">
+                    {{ profe.nombre[:1] | upper }}
+                </div>
+                {% endif %}
+                <div class="p-4">
+                    <h2 class="h5 fw-bold mb-1">{{ profe.nombre }}</h2>
+                    {% if profe.titulo_profesional %}<p class="text-danger fw-semibold small mb-2">{{ profe.titulo_profesional }}</p>{% endif %}
+                    {% if profe.bio %}<p class="text-secondary small mb-3" style="white-space: pre-line;">{{ profe.bio }}</p>{% endif %}
+                    {% set activos = profe.cursos_dictados | selectattr('activo') | list %}
+                    {% if activos %}
+                    <p class="small fw-bold mb-1">Dicta</p>
+                    <ul class="small mb-0 ps-3">
+                        {% for curso in activos %}<li>{{ curso.nombre }}</li>{% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+        {% else %}
+        <p class="text-center text-secondary">Muy pronto vas a conocer a nuestros profesores.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

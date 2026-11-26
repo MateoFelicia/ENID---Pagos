@@ -30,6 +30,14 @@ MEDIOS_ACCESO = [
 NOMBRE_MEDIO = dict(MEDIOS_ACCESO)
 
 
+# Qué profes dictan cada curso (un curso puede tener varios y un profe varios cursos)
+curso_profesores = db.Table(
+    "curso_profesores",
+    db.Column("curso_id", db.Integer, db.ForeignKey("cursos.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("usuario_id", db.Integer, db.ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
 class Usuario(UserMixin, db.Model):
     __tablename__ = "usuarios"
 
@@ -43,6 +51,17 @@ class Usuario(UserMixin, db.Model):
         default=False,
         server_default=db.false()
     )
+    # Profesor: puede cargar módulos, clases y partes de los cursos que dicta
+    es_profesor = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        server_default=db.false()
+    )
+    # Perfil público del profe (página /profesores y ficha de cada curso)
+    titulo_profesional = db.Column(db.String(160))
+    bio = db.Column(db.String(1500))
+    foto_id = db.Column(db.Integer, db.ForeignKey("imagenes.id", ondelete="SET NULL"))
     creado_en = db.Column(db.DateTime, default=ahora_argentina)
     ultimo_ingreso = db.Column(db.DateTime)
     # Recordatorios de clases y avisos de novedades (los mails de pagos y de cuenta siempre salen)
@@ -57,6 +76,15 @@ class Usuario(UserMixin, db.Model):
         "Inscripcion",
         back_populates="usuario"
     )
+    cursos_dictados = db.relationship(
+        "Curso",
+        secondary=curso_profesores,
+        back_populates="profesores",
+        order_by="Curso.id"
+    )
+
+    def dicta(self, curso):
+        return self.es_profesor and any(c.id == curso.id for c in self.cursos_dictados)
 
     def establecer_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -79,6 +107,12 @@ class Curso(db.Model):
     grabacion = db.Column(db.String(300))
 
     inscripciones = db.relationship("Inscripcion", back_populates="curso")
+    profesores = db.relationship(
+        "Usuario",
+        secondary=curso_profesores,
+        back_populates="cursos_dictados",
+        order_by="Usuario.nombre"
+    )
     modulos = db.relationship(
         "Modulo",
         back_populates="curso",
