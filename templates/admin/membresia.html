@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+
+{% block title %}Membresía | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="mb-4">
+        <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
+        <h1 class="display-6 fw-bold mb-2">Membresía mensual</h1>
+        <p class="text-secondary mb-0">
+            Con la membresía activa, el alumno entra a todos los cursos. Mercado Pago cobra solo cada mes.
+            Los cursos se siguen vendiendo sueltos, con acceso para siempre.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-4">
+            <div class="bg-white text-dark rounded-4 shadow-sm p-4">
+                <h2 class="h5 fw-bold mb-3">Plan</h2>
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    {{ campo(form.nombre) }}
+                    {{ campo(form.descripcion, rows="3") }}
+                    {{ campo(form.precio, min="1", step="0.01") }}
+                    {{ campo(form.activo) }}
+                    {{ form.enviar(class="btn btn-danger w-100") }}
+                </form>
+                <p class="small text-secondary mt-3 mb-0">
+                    Para que se activen solas, en Mercado Pago → Webhooks marcá también el evento
+                    <strong>Planes y suscripciones</strong>.
+                </p>
+            </div>
+        </div>
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-baseline px-2 mb-2">
+                    <h2 class="h5 fw-bold mb-0">Suscripciones</h2>
+                    <span class="small"><strong>{{ activas }}</strong> con acceso hoy</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead><tr><th>Alumno</th><th>Estado</th><th>Monto</th><th>Desde</th><th>Próximo cobro / acceso hasta</th></tr></thead>
+                        <tbody>
+                            {% for s in suscripciones %}
+                            <tr>
+                                <td><strong>{{ s.usuario.nombre }}</strong><div class="small text-secondary">{{ s.usuario.email }}</div></td>
+                                <td>
+                                    {% if s.estado == 'authorized' %}<span class="badge text-bg-success">Activa</span>
+                                    {% elif s.estado == 'pending' %}<span class="badge text-bg-warning">Sin confirmar</span>
+                                    {% else %}<span class="badge text-bg-secondary">{{ s.estado_legible }}</span>{% endif %}
+                                </td>
+                                <td>ARS {{ s.monto | ars }}</td>
+                                <td class="small">{{ s.creado_en.strftime('%d/%m/%Y') if s.creado_en else '—' }}</td>
+                                <td class="small">
+                                    {% if s.acceso_hasta %}Acceso hasta {{ s.acceso_hasta.strftime('%d/%m/%Y') }}
+                                    {% elif s.estado == 'authorized' and s.proximo_cobro %}{{ s.proximo_cobro.strftime('%d/%m/%Y') }}
+                                    {% else %}—{% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center text-secondary py-4">Todavía no hay suscripciones.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

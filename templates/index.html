@@ -188,6 +188,29 @@
                 <p class="text-white-50">Todavía no hay cursos activos publicados.</p>
                 {% endfor %}
             </div>
+
+            {% set plan = membresia_a_la_venta() %}
+            {% if plan %}
+            <article class="tarjeta-pago tarjeta-membresia mt-4">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-7">
+                        <p class="seccion-etiqueta">MEMBRESÍA MENSUAL</p>
+                        <h3>{{ plan.nombre }}</h3>
+                        <p class="mb-0">{{ plan.descripcion or "Acceso a todos los cursos de ENID mientras estés suscripto. Cancelás cuando quieras." }}</p>
+                    </div>
+                    <div class="col-lg-5">
+                        <p class="etiqueta-prueba">POR MES</p>
+                        <p class="precio-curso">ARS {{ plan.precio | ars }}</p>
+                        {% if current_user.is_authenticated and current_user.membresia_activa %}
+                        <a class="btn btn-outline-light btn-lg w-100" href="{{ url_for('membresia.ver') }}">VER MI MEMBRESÍA</a>
+                        {% else %}
+                        <a class="btn btn-danger btn-lg w-100 btn-inscripcion" href="{{ url_for('membresia.ver') }}">QUIERO LA MEMBRESÍA</a>
+                        <p class="nota-pago">Débito automático con Mercado Pago. Cancelás cuando quieras.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endif %}
         </div>
     </section>
 

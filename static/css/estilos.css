@@ -630,3 +630,9 @@ body {
     font-family: "Anton", sans-serif;
     font-size: 4rem;
 }
+
+/* ---------------------------------------------------------------- Membresía */
+.tarjeta-membresia {
+    height: auto;
+    border-top-color: #f5b301;
+}

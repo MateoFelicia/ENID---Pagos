@@ -30,6 +30,8 @@ class FakeMercadoPago:
 
     pagos = {}
     preferencias = []
+    preapprovals = {}   # id -> preapproval "en Mercado Pago"
+    creados = []        # cuerpos enviados a preapproval().create
 
     def __init__(self, token):
         self.token = token
@@ -48,6 +50,30 @@ class FakeMercadoPago:
 
         return _Pref()
 
+    def preapproval(self):
+        class _Pre:
+            def create(self, data):
+                FakeMercadoPago.creados.append(data)
+                pid = f"pre-{len(FakeMercadoPago.creados)}"
+                FakeMercadoPago.preapprovals[pid] = {
+                    "id": pid, "status": "pending", "external_reference": data["external_reference"],
+                    "auto_recurring": dict(data["auto_recurring"]), "next_payment_date": None,
+                }
+                return {"status": 201, "response": {"id": pid, "init_point": f"https://mp.test/suscripcion/{pid}"}}
+
+            def get(self, pid):
+                datos = FakeMercadoPago.preapprovals.get(str(pid))
+                return {"status": 200, "response": dict(datos)} if datos else {"status": 404, "response": {}}
+
+            def update(self, pid, cambios):
+                datos = FakeMercadoPago.preapprovals.get(str(pid))
+                if not datos:
+                    return {"status": 404, "response": {}}
+                datos.update(cambios)
+                return {"status": 200, "response": dict(datos)}
+
+        return _Pre()
+
     def payment(self):
         class _Pay:
             def get(self, payment_id):
@@ -63,6 +89,8 @@ class FakeMercadoPago:
 def entorno(monkeypatch):
     FakeMercadoPago.pagos = {}
     FakeMercadoPago.preferencias = []
+    FakeMercadoPago.preapprovals = {}
+    FakeMercadoPago.creados = []
     monkeypatch.setattr(app_module.mercadopago, "SDK", FakeMercadoPago)
     app_module.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
     from extensions import limiter
