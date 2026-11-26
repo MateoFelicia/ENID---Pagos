@@ -6,6 +6,7 @@ import re
 from flask import current_app, g
 
 from db import db
+from iconos import TEMAS_POR_DEFECTO
 from models import Ajuste
 
 log = logging.getLogger(__name__)
@@ -22,6 +23,8 @@ DEFAULTS = {
     "legal_titular": "",
     "legal_cuit": "",
     "legal_domicilio": "",
+    # «Qué vas a aprender» en la portada: una línea por tema (ver iconos.leer_temas)
+    "temas_portada": TEMAS_POR_DEFECTO,
 }
 
 

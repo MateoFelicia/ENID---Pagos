@@ -13,6 +13,8 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, ValidationError, Optional
 
+from iconos import MAX_TEMAS, leer_temas
+
 
 class RegistroForm(FlaskForm):
     nombre = StringField(
@@ -191,7 +193,19 @@ class AjustesForm(FlaskForm):
     legal_titular = StringField("Titular / razón social", validators=[Optional(), Length(max=160)])
     legal_cuit = StringField("CUIT / CUIL", validators=[Optional(), Length(max=20)])
     legal_domicilio = StringField("Domicilio", validators=[Optional(), Length(max=200)])
+    temas_portada = TextAreaField(
+        "Temas", validators=[Optional(), Length(max=3000)],
+        description="Una línea por tema: ícono | Título | Descripción. Si lo dejás vacío, la sección no se muestra."
+    )
     enviar = SubmitField("Guardar ajustes")
+
+    def validate_temas_portada(self, campo):
+        filas = leer_temas(campo.data)
+        errores = [f"Línea {numero}: {error}." for numero, _, _, _, error in filas if error]
+        if len(filas) > MAX_TEMAS:
+            errores.append(f"Poné como máximo {MAX_TEMAS} temas.")
+        if errores:
+            raise ValidationError(" ".join(errores[:3]))
 
 
 class ArrepentimientoForm(FlaskForm):

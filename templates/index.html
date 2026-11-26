@@ -26,7 +26,7 @@
                 <a class="btn btn-danger btn-lg btn-inscripcion" href="#precio">
                     QUIERO INSCRIBIRME
                 </a>
-                <a class="btn btn-outline-light btn-lg" href="#propuesta">
+                <a class="btn btn-outline-light btn-lg" href="{{ '#propuesta' if temas else '#modalidades' }}">
                     CONOCER LA PROPUESTA
                 </a>
             </div>
@@ -39,41 +39,70 @@
         </svg>
     </div>
 
+    {% if temas %}
     <section class="seccion-propuesta py-5" id="propuesta">
         <div class="container py-lg-5">
-            <p class="seccion-etiqueta">APRENDER · ENTRENAR · COMPARTIR</p>
-            <h2 class="titulo-seccion">EL FÚTBOL SE CONSTRUYE EN EQUIPO.</h2>
+            <p class="seccion-etiqueta">QUÉ VAS A APRENDER</p>
+            <h2 class="titulo-seccion">HERRAMIENTAS PARA DIRIGIR Y FORMAR.</h2>
 
             <div class="row g-4 mt-3">
-                <div class="col-md-4">
+                {% for tema in temas %}
+                <div class="col-sm-6 col-lg-4">
                     <article class="tarjeta-propuesta">
-                        <span class="numero-tarjeta">01</span>
-                        <h3>TÉCNICA</h3>
-                        <p>Práctica y fundamentos para seguir creciendo con la pelota.</p>
+                        <span class="icono-tema">{{ icono(tema.icono, 34) }}</span>
+                        <h3>{{ tema.titulo | upper }}</h3>
+                        {% if tema.descripcion %}<p>{{ tema.descripcion }}</p>{% endif %}
                     </article>
                 </div>
-
-                <div class="col-md-4">
-                    <article class="tarjeta-propuesta">
-                        <span class="numero-tarjeta">02</span>
-                        <h3>JUEGO</h3>
-                        <p>Aprendizaje del juego y sus decisiones dentro de la cancha.</p>
-                    </article>
-                </div>
-
-                <div class="col-md-4">
-                    <article class="tarjeta-propuesta">
-                        <span class="numero-tarjeta">03</span>
-                        <h3>EQUIPO</h3>
-                        <p>Un espacio para compartir, entrenar y disfrutar del fútbol.</p>
-                    </article>
-                </div>
+                {% endfor %}
             </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% set plan = membresia_a_la_venta() %}
+    <section class="seccion-gris py-5" id="modalidades">
+        <div class="container py-lg-4">
+            <p class="seccion-etiqueta">CÓMO SE CURSA</p>
+            <h2 class="titulo-seccion">EN VIVO, GRABADO Y A TU RITMO.</h2>
+
+            <ul class="lista-modalidades mt-4">
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("envivo") }}</span>
+                    <div><h3>Clases en vivo</h3>
+                    <p>Por Google Meet, con el profe. Preguntás en el momento.</p></div>
+                </li>
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("grabada") }}</span>
+                    <div><h3>Clases grabadas</h3>
+                    <p>Si no llegás, la clase queda grabada para verla después.</p></div>
+                </li>
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("ritmo") }}</span>
+                    <div><h3>A tu ritmo</h3>
+                    <p>Cada clase en partes cortas, como una lista de videos.</p></div>
+                </li>
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("acceso") }}</span>
+                    <div><h3>Acceso permanente</h3>
+                    <p>Pagás el curso una vez y queda en tu cuenta.{% if plan %} O tomá la membresía y abrí todos.{% endif %}</p></div>
+                </li>
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("progreso") }}</span>
+                    <div><h3>Tu progreso a la vista</h3>
+                    <p>Ves cuánto completaste de cada clase, módulo y curso.</p></div>
+                </li>
+                <li class="modalidad">
+                    <span class="modalidad-icono">{{ icono("celular") }}</span>
+                    <div><h3>Desde donde estés</h3>
+                    <p>En la compu, la tablet o el celular. Solo necesitás internet.</p></div>
+                </li>
+            </ul>
         </div>
     </section>
 
     {% if sitio.entrenador_nombre or sitio.entrenador_bio %}
-    <section class="seccion-gris py-5" id="entrenador">
+    <section class="py-5" id="entrenador">
         <div class="container py-lg-5">
             <div class="row align-items-center g-5">
                 {% if sitio.entrenador_imagen_id %}
@@ -101,7 +130,7 @@
     </section>
     {% endif %}
 
-    <section class="py-5" id="como-funciona">
+    <section class="py-5 {{ 'borde-superior' if sitio.entrenador_nombre or sitio.entrenador_bio else '' }}" id="como-funciona">
         <div class="container py-lg-5">
             <p class="seccion-etiqueta">ASÍ DE SIMPLE</p>
             <h2 class="titulo-seccion">EMPEZÁ EN TRES PASOS.</h2>
@@ -145,11 +174,15 @@
                         <p class="seccion-etiqueta">INSCRIPCIÓN ENID</p>
                         <h3>{{ curso.nombre }}</h3>
                         <p>{{ curso.descripcion or "Formación futbolística ENID." }}</p>
-                        {% if curso.profesores %}<p class="small mb-2"><strong>Con</strong> {{ curso.profesores | map(attribute='nombre') | join(', ') }}</p>{% endif %}
-                        {% set n_clases = curso.clases | selectattr('publicada') | list | length %}
-                        {% if n_clases %}
-                        <p class="mb-2"><strong>{{ n_clases }} clase{{ '' if n_clases == 1 else 's' }}</strong>, en vivo y grabadas</p>
-                        {% endif %}
+                        {% set r = resumen_curso(curso) %}
+                        <ul class="ficha-curso">
+                            {% if r.modulos %}<li>{{ icono("modulos", 18) }} {{ r.modulos }} módulo{{ '' if r.modulos == 1 else 's' }}</li>{% endif %}
+                            {% if r.clases %}<li>{{ icono("clases", 18) }} {{ r.clases }} clase{{ '' if r.clases == 1 else 's' }}</li>{% endif %}
+                            {% if r.videos %}<li>{{ icono("grabada", 18) }} {{ r.videos }} video{{ '' if r.videos == 1 else 's' }}</li>{% endif %}
+                            {% if r.duracion %}<li>{{ icono("duracion", 18) }} {{ r.duracion }}</li>{% endif %}
+                            {% if r.en_vivo %}<li>{{ icono("envivo", 18) }} Con clases en vivo</li>{% endif %}
+                            {% if curso.profesores %}<li class="ficha-profes">{{ icono("profe", 18) }} {{ curso.profesores | map(attribute='nombre') | join(', ') }}</li>{% endif %}
+                        </ul>
 
                         <div class="mt-auto">
                         <hr>
@@ -189,7 +222,6 @@
                 {% endfor %}
             </div>
 
-            {% set plan = membresia_a_la_venta() %}
             {% if plan %}
             <article class="tarjeta-pago tarjeta-membresia mt-4">
                 <div class="row g-4 align-items-center">
