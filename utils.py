@@ -66,4 +66,6 @@ def inscripcion_con_acceso(usuario, curso):
 def tiene_acceso_curso(usuario, curso):
     if usuario.es_admin or usuario.dicta(curso):
         return True
+    if usuario.membresia_activa is not None:
+        return True
     return inscripcion_con_acceso(usuario, curso) is not None

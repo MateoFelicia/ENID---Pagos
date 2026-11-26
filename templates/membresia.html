@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Membresía | ENID{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="bg-white text-dark rounded-4 shadow p-4 p-md-5">
+                <p class="text-danger fw-bold text-uppercase mb-2">Membresía mensual</p>
+
+                {% if suscripcion and suscripcion.da_acceso() %}
+                {# ------------------------------------------------ ya es miembro #}
+                <h1 class="h2 fw-bold mb-2">{{ suscripcion.plan.nombre }}</h1>
+                <p class="mb-3">
+                    <span class="badge {{ 'text-bg-success' if suscripcion.estado == 'authorized' else 'text-bg-secondary' }}">{{ suscripcion.estado_legible }}</span>
+                    <span class="ms-2">ARS {{ suscripcion.monto | ars }} por mes</span>
+                </p>
+                <ul class="list-unstyled mb-4">
+                    {% if suscripcion.estado == 'authorized' and suscripcion.proximo_cobro %}
+                    <li>Próximo cobro: <strong>{{ suscripcion.proximo_cobro.strftime('%d/%m/%Y') }}</strong></li>
+                    {% endif %}
+                    {% if suscripcion.acceso_hasta %}
+                    <li>No se te cobra más. Tenés acceso hasta el <strong>{{ suscripcion.acceso_hasta.strftime('%d/%m/%Y') }}</strong>.</li>
+                    {% endif %}
+                </ul>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('inicio') }}#precio" class="btn btn-danger">Ver todos los cursos</a>
+                    {% if suscripcion.estado in ('authorized', 'paused') %}
+                    <form method="POST" action="{{ url_for('membresia.cancelar') }}"
+                        onsubmit="return confirm('¿Cancelar la membresía? No se te cobra más y mantenés el acceso hasta el final del mes ya pagado.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger">Cancelar membresía</button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                {% elif plan %}
+                {# ------------------------------------------------ a la venta #}
+                <h1 class="h2 fw-bold mb-2">{{ plan.nombre }}</h1>
+                <p class="text-secondary">{{ plan.descripcion or "Acceso a todos los cursos de ENID mientras estés suscripto." }}</p>
+                <p class="display-6 fw-bold mb-1">ARS {{ plan.precio | ars }}</p>
+                <p class="text-secondary small mb-4">por mes, con débito automático</p>
+                <ul class="mb-4">
+                    <li>Entrás a <strong>todos los cursos</strong>, también a los que se sumen.</li>
+                    <li>Mercado Pago te cobra solo cada mes, con tarjeta.</li>
+                    <li>Cancelás cuando quieras desde acá y seguís con acceso hasta terminar el mes pagado.</li>
+                </ul>
+                {% if suscripcion and suscripcion.estado == 'pending' and suscripcion.mp_preapproval_id %}
+                <div class="alert alert-info small">Empezaste una suscripción y Mercado Pago todavía no la confirmó. Si ya cargaste tu tarjeta, se activa sola en unos minutos.</div>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+                <form method="POST" action="{{ url_for('membresia.suscribirme') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-lg w-100 btn-inscripcion">SUSCRIBIRME</button>
+                </form>
+                <p class="text-secondary small mt-2 mb-0">Vas a cargar tu tarjeta de forma segura en Mercado Pago.</p>
+                {% else %}
+                <a class="btn btn-danger btn-lg w-100 btn-inscripcion" href="{{ url_for('registro', next=url_for('membresia.ver')) }}">CREAR CUENTA Y SUSCRIBIRME</a>
+                <p class="text-secondary small mt-2 mb-0">¿Ya tenés cuenta? <a class="link-danger" href="{{ url_for('iniciar_sesion', next=url_for('membresia.ver')) }}">Iniciá sesión</a></p>
+                {% endif %}
+
+                {% else %}
+                <h1 class="h2 fw-bold mb-2">Tu membresía</h1>
+                <p class="mb-0">Tu membresía está {{ suscripcion.estado_legible | lower }} y la membresía no está a la venta en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -37,6 +37,7 @@ from sqlalchemy.orm import selectinload
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import aula
+import membresia
 import profes
 import gestion
 import sitio
@@ -153,6 +154,7 @@ app.register_blueprint(sitio.bp)
 app.register_blueprint(gestion.bp)
 app.register_blueprint(aula.bp)
 app.register_blueprint(profes.bp)
+app.register_blueprint(membresia.bp)
 
 @app.template_filter("fecha_ar")
 def fecha_ar(fecha):
@@ -810,7 +812,9 @@ def inicio():
 
     # Para que cada tarjeta muestre "Inscribirme", "Completar pago" o "Entrar al curso"
     estados = {}
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and current_user.membresia_activa is not None:
+        estados = {c.id: "acceso" for c in cursos}
+    elif current_user.is_authenticated:
         for inscripcion in current_user.inscripciones:
             if inscripcion.tiene_acceso():
                 estados[inscripcion.curso_id] = "acceso"
@@ -1030,7 +1034,20 @@ def webhook_mercado_pago():
         app.logger.warning("Webhook con firma inválida: %s", error)
         return "", 401
 
-    tipo = request.args.get("type") or evento.get("type")
+    tipo = request.args.get("type") or evento.get("type") or request.args.get("topic")
+    # Membresía: cambios de la suscripción y cada cobro mensual
+    if tipo in ("subscription_preapproval", "preapproval"):
+        datos = membresia.consultar_preapproval(data_id)
+        if datos is None:
+            return "", 500  # que Mercado Pago reintente
+        membresia.aplicar_preapproval(datos)
+        return "", 200
+    if tipo == "subscription_authorized_payment":
+        preapproval_id = membresia.preapproval_de_cobro(data_id)
+        if preapproval_id is None:
+            return "", 500  # que Mercado Pago reintente
+        membresia.sincronizar(preapproval_id)
+        return "", 200
     if tipo != "payment":
         return "", 200
 

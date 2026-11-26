@@ -3,13 +3,51 @@
 {% block content %}
 <section class="container py-5">
     <p class="text-danger fw-bold text-uppercase mb-2">Administración</p>
-    <h1 class="display-6 fw-bold mb-3">Importar alumnos desde un CSV</h1>
+    <h1 class="display-6 fw-bold mb-3">Dar acceso a varios alumnos</h1>
 
     {% if fase == 'subir' %}
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+        <h2 class="h5 fw-bold">Pegá una lista de mails</h2>
+        <p class="text-secondary small">Un alumno por línea: solo el mail, o nombre y mail (<code>Ana Pérez, ana@mail.com</code>
+            o <code>Ana Pérez &lt;ana@mail.com&gt;</code>). También podés copiar dos columnas de Excel.
+            Si falta el nombre, lo armamos con el mail y el alumno lo corrige después.
+            Antes de dar acceso vas a ver una vista previa.</p>
+        <form method="POST" class="row g-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="accion" value="previsualizar">
+            <div class="col-lg-7">
+                <label class="form-label" for="lista">Mails</label>
+                <textarea class="form-control" id="lista" name="lista" rows="8"
+                    placeholder="ana@mail.com&#10;Luis Gómez, luis@mail.com" required>{{ lista or '' }}</textarea>
+            </div>
+            <div class="col-lg-5">
+                <fieldset class="mb-3">
+                    <legend class="form-label fs-6">Cursos a los que les das acceso</legend>
+                    {% for curso in cursos %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="curso_ids" value="{{ curso.id }}" id="lista-curso-{{ curso.id }}">
+                        <label class="form-check-label" for="lista-curso-{{ curso.id }}">{{ curso.nombre }}{% if not curso.activo %} <span class="text-secondary">(inactivo)</span>{% endif %}</label>
+                    </div>
+                    {% else %}<p class="small text-secondary">Todavía no hay cursos.</p>{% endfor %}
+                </fieldset>
+                <label class="form-label" for="medio">¿Cómo pagaron?</label>
+                <select class="form-select mb-3" id="medio" name="medio">
+                    <option value="">Sin especificar</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="beca">Beca o regalo</option>
+                    <option value="otro">Otro</option>
+                </select>
+                <button class="btn btn-danger" type="submit">Revisar lista</button>
+            </div>
+        </form>
+    </div>
+
     <div class="row g-4">
         <div class="col-lg-7">
             <div class="bg-white rounded-4 shadow-sm p-4">
-                <h2 class="h5 fw-bold">1. Subí tu archivo</h2>
+                <h2 class="h5 fw-bold">O subí un archivo CSV</h2>
                 <p class="text-secondary small">En Excel o Google Sheets: <em>Archivo → Descargar / Guardar como → CSV</em>.
                     Antes de importar vas a ver una vista previa y no se guarda nada hasta que confirmes.</p>
                 <form method="POST" enctype="multipart/form-data" class="d-flex flex-column gap-3">
@@ -109,7 +147,7 @@
     {% endif %}
 
     <a class="btn btn-danger" href="{{ url_for('administrar_usuarios') }}">Ver alumnos</a>
-    <a class="btn btn-outline-dark" href="{{ url_for('gestion.importar_alumnos') }}">Importar otro archivo</a>
+    <a class="btn btn-outline-dark" href="{{ url_for('gestion.importar_alumnos') }}">Importar otra lista</a>
     {% endif %}
 </section>
 {% endblock %}

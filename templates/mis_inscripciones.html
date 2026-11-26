@@ -17,6 +17,23 @@
         </a>
     </div>
 
+    {% set miembro = current_user.membresia_activa %}
+    {% if miembro %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <p class="text-danger fw-bold small text-uppercase mb-1">Membresía {{ miembro.estado_legible | lower }}</p>
+                <h2 class="h4 fw-bold mb-1">{{ miembro.plan.nombre }}</h2>
+                <p class="text-secondary mb-0">Tenés acceso a todos los cursos{% if miembro.acceso_hasta %} hasta el {{ miembro.acceso_hasta.strftime('%d/%m/%Y') }}{% endif %}.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('inicio') }}#precio" class="btn btn-danger">Ver todos los cursos</a>
+                <a href="{{ url_for('membresia.ver') }}" class="btn btn-outline-dark">Mi membresía</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if inscripciones %}
     <div class="row g-3">
         {% for inscripcion in inscripciones %}
@@ -75,7 +92,7 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
+    {% elif not miembro %}
     <div class="bg-light rounded-4 p-4 p-md-5 text-center">
         <h2 class="h4 fw-bold">Todavía no tenés inscripciones</h2>
         <p class="text-secondary">
