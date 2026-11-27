@@ -13,7 +13,6 @@
     <div class="row justify-content-center">
         <div class="col-lg-9">
             {% for e in episodios %}
-            {% set embed = reproductor_podcast(e.url) %}
             <article class="episodio">
                 <div class="d-flex flex-wrap align-items-baseline gap-2 mb-1">
                     <h2 class="h5 fw-bold mb-0">{{ e.titulo }}</h2>
@@ -22,20 +21,7 @@
                     </span>
                 </div>
                 {% if e.descripcion %}<p class="text-secondary mb-3" style="white-space: pre-line;">{{ e.descripcion }}</p>{% endif %}
-                {% if embed %}
-                {% if 'spotify' in embed %}
-                <iframe class="episodio-spotify" src="{{ embed }}" height="152" loading="lazy" title="{{ e.titulo }}"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
-                {% else %}
-                <div class="ratio ratio-16x9 rounded overflow-hidden">
-                    <iframe src="{{ embed }}" loading="lazy" title="{{ e.titulo }}" allowfullscreen
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                </div>
-                {% endif %}
-                {% else %}
-                <a class="btn btn-danger" href="{{ e.url }}" target="_blank" rel="noopener noreferrer">
-                    {{ icono("podcast", 18) }} Escuchar en {{ plataforma_podcast(e.url) }}</a>
-                {% endif %}
+                {% include "recursos/_reproductor.html" %}
             </article>
             {% else %}
             <p class="text-center text-secondary">Muy pronto el primer episodio. Mientras tanto, mirá las <a class="link-danger" href="{{ url_for('noticias.listado') }}">noticias</a>.</p>

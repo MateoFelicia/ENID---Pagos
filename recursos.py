@@ -75,6 +75,14 @@ def libros_visibles():
     ).scalars().all()
 
 
+def ultimo_episodio():
+    """El episodio visible más reciente, para destacarlo en la portada (o None)."""
+    return db.session.execute(
+        db.select(Episodio).where(Episodio.visible.is_(True))
+        .order_by(Episodio.fecha.is_(None), Episodio.fecha.desc(), Episodio.id.desc()).limit(1)
+    ).scalar_one_or_none()
+
+
 def cantidades():
     """Para la portada: qué recursos mostrar."""
     contar = lambda modelo: db.session.execute(  # noqa: E731
