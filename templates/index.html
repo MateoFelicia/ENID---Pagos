@@ -30,6 +30,11 @@
                 <a class="btn btn-outline-light btn-lg" href="{{ '#propuesta' if temas else '#modalidades' }}">
                     CONOCER LA PROPUESTA
                 </a>
+                {% if ultimo_episodio %}
+                <a class="btn btn-outline-light btn-lg" href="#podcast">
+                    {{ icono("podcast", 20) }} ESCUCHAR PODCASTS
+                </a>
+                {% endif %}
             </div>
         </div>
     </section>
