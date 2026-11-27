@@ -1,0 +1,14 @@
+{# Reproductor de un episodio: iframe de YouTube/Spotify o botón para abrirlo aparte. Espera la variable `e`. #}
+{% set embed = reproductor_podcast(e.url) %}
+{% if embed and 'spotify' in embed %}
+<iframe class="episodio-spotify" src="{{ embed }}" height="152" loading="lazy" title="{{ e.titulo }}"
+    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+{% elif embed %}
+<div class="ratio ratio-16x9 rounded overflow-hidden episodio-video">
+    <iframe src="{{ embed }}" loading="lazy" title="{{ e.titulo }}" allowfullscreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+</div>
+{% else %}
+<a class="btn btn-danger" href="{{ e.url }}" target="_blank" rel="noopener noreferrer">
+    {{ icono("podcast", 18) }} Escuchar en {{ plataforma_podcast(e.url) }}</a>
+{% endif %}

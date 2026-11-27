@@ -62,11 +62,23 @@ def test_episodio_oculto_o_link_peligroso(cliente_admin, cliente):
     assert "Oculto" not in cliente.get("/podcasts").get_data(as_text=True)
 
 
-def test_portada_muestra_recursos_solo_si_hay(cliente_admin, cliente):
-    assert 'id="recursos"' not in cliente.get("/").get_data(as_text=True)
-    nuevo_episodio(cliente_admin)
+def test_portada_destaca_el_ultimo_episodio(cliente_admin, cliente):
     html = cliente.get("/").get_data(as_text=True)
-    assert 'id="recursos"' in html and "1 episodio" in html and "Biblioteca</strong>" not in html
+    assert 'id="podcast"' not in html and 'id="recursos"' not in html and "ESCUCHAR PODCASTS" not in html
+    assert 'href="/podcasts">Podcasts</a>' in html  # el menú siempre lleva a los podcasts
+
+    nuevo_episodio(cliente_admin, titulo="Viejo", fecha="2026-10-01")
+    nuevo_episodio(cliente_admin)
+    nuevo_episodio(cliente_admin, titulo="Borrador", fecha="2026-12-31", visible="")
+    html = cliente.get("/").get_data(as_text=True)
+    seccion = html.split('id="podcast"')[1].split("</section>")[0]
+    assert "Episodio 1 · La presión" in seccion and "open.spotify.com/embed/episode/" in seccion
+    assert 'href="#podcast"' in html  # botón en la portada
+    assert "Viejo" not in seccion and "Borrador" not in seccion and "Ver todos los episodios (2)" in seccion
+    assert 'id="recursos"' not in html  # sin libros no hay sección de biblioteca
+
+    nuevo_libro(cliente_admin)
+    assert "Biblioteca</strong>" in cliente.get("/").get_data(as_text=True)
 
 
 # ---------------------------------------------------------------- biblioteca

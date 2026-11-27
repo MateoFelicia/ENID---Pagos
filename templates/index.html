@@ -30,6 +30,11 @@
                 <a class="btn btn-outline-light btn-lg" href="{{ '#propuesta' if temas else '#modalidades' }}">
                     CONOCER LA PROPUESTA
                 </a>
+                {% if ultimo_episodio %}
+                <a class="btn btn-outline-light btn-lg" href="#podcast">
+                    {{ icono("podcast", 20) }} ESCUCHAR PODCASTS
+                </a>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -102,8 +107,28 @@
         </div>
     </section>
 
+    {% if ultimo_episodio %}
+    {% set e = ultimo_episodio %}
+    <section class="py-5" id="podcast">
+        <div class="container py-lg-4">
+            <div class="row g-4 g-lg-5 align-items-center">
+                <div class="col-lg-5">
+                    <p class="seccion-etiqueta">PODCAST GRATIS</p>
+                    <h2 class="titulo-seccion">ESCUCHÁ A LOS QUE SABEN.</h2>
+                    <p class="text-secondary mt-3 mb-1">Último episodio{% if e.fecha %} · {{ e.fecha | dia }}{% endif %}{% if e.duracion_min %} · {{ e.duracion_min }} min{% endif %}</p>
+                    <h3 class="h4 fw-bold">{{ e.titulo }}</h3>
+                    {% if e.descripcion %}<p class="text-secondary">{{ e.descripcion | truncate(220) }}</p>{% endif %}
+                    <a class="btn btn-outline-dark mt-2" href="{{ url_for('recursos.podcasts') }}">
+                        {{ icono("podcast", 18) }} Ver todos los episodios{% if recursos_gratis.podcasts > 1 %} ({{ recursos_gratis.podcasts }}){% endif %}</a>
+                </div>
+                <div class="col-lg-7">{% include "recursos/_reproductor.html" %}</div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     {% if sitio.entrenador_nombre or sitio.entrenador_bio %}
-    <section class="py-5" id="entrenador">
+    <section class="py-5 {{ 'borde-superior' if ultimo_episodio else '' }}" id="entrenador">
         <div class="container py-lg-5">
             <div class="row align-items-center g-5">
                 {% if sitio.entrenador_imagen_id %}
@@ -327,22 +352,12 @@
     </script>
     {% endif %}
 
-    {% if recursos_gratis.podcasts or recursos_gratis.libros %}
+    {% if recursos_gratis.libros %}
     <section class="py-5 seccion-gris" id="recursos">
         <div class="container py-lg-4">
             <p class="seccion-etiqueta">GRATIS PARA TODOS</p>
             <h2 class="titulo-seccion">SEGUÍ APRENDIENDO.</h2>
             <div class="row g-4 mt-2">
-                {% if recursos_gratis.podcasts %}
-                <div class="col-md-6">
-                    <a class="tarjeta-recurso" href="{{ url_for('recursos.podcasts') }}">
-                        <span class="modalidad-icono">{{ icono("podcast") }}</span>
-                        <span><strong>Podcasts</strong>
-                        <span class="d-block">{{ recursos_gratis.podcasts }} episodio{{ '' if recursos_gratis.podcasts == 1 else 's' }} sobre fútbol y formación de entrenadores.</span></span>
-                    </a>
-                </div>
-                {% endif %}
-                {% if recursos_gratis.libros %}
                 <div class="col-md-6">
                     <a class="tarjeta-recurso" href="{{ url_for('recursos.biblioteca') }}">
                         <span class="modalidad-icono">{{ icono("libro") }}</span>
@@ -350,7 +365,6 @@
                         <span class="d-block">{{ recursos_gratis.libros }} libro{{ '' if recursos_gratis.libros == 1 else 's' }} que recomendamos, con link para comprarlos.</span></span>
                     </a>
                 </div>
-                {% endif %}
             </div>
         </div>
     </section>

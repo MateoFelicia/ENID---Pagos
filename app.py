@@ -830,7 +830,7 @@ def inicio():
                 estados.setdefault(inscripcion.curso_id, "pendiente")
 
     return render_template("index.html", cursos=cursos, estados=estados, ultimas_noticias=noticias.ultimas(),
-                           recursos_gratis=recursos.cantidades(),
+                           recursos_gratis=recursos.cantidades(), ultimo_episodio=recursos.ultimo_episodio(),
                            **sitio.contenido_portada())
 
 

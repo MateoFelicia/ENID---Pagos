@@ -978,3 +978,8 @@ body {
 .chequeo-ok .chequeo-marca { background: #198754; }
 .chequeo-aviso .chequeo-marca { color: #3d2e00; background: #ffc107; }
 .chequeo-error .chequeo-marca { background: var(--rojo); }
+
+/* Fondo oscuro mientras carga el reproductor de YouTube */
+.episodio-video {
+    background: #0a0a0a;
+}
